@@ -14,3 +14,7 @@ dist/
 .vscode/
 .idea/
 *.log
+
+# Graphify
+graphify-out/
+.agents/

@@ -9,6 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@veyn/core": "workspace:*"
+    "@veyn/core": "workspace:*",
+    "commander": "^15.0.0"
+  },
+  "bin": {
+    "veyn": "./bin/veyn.js"
   }
 }

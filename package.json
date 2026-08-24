@@ -1,0 +1,27 @@
+{
+  "name": "veyn-monorepo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "typecheck": "tsc -b",
+    "build": "tsc -b"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.22.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

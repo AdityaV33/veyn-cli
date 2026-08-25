@@ -1,4 +1,11 @@
 export * from "./scanner/index.js";
 export * from "./parser/index.js";
 export * from "./symbols/index.js";
+export * from "./dependencies/index.js";
+export * from "./graph/index.js";
+export * from "./calls/index.js";
+export * from "./embeddings/index.js";
+export * from "./persistence/index.js";
+export * from "./incremental/index.js";
+export * from "./search/index.js";
 export const core = "core";

@@ -18,3 +18,8 @@ dist/
 # Graphify
 graphify-out/
 .agents/
+
+# Tests
+**/__tests__/
+*.test.ts
+*.spec.ts

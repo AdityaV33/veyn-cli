@@ -1,11 +1,13 @@
-import { statSync, readdirSync } from "node:fs";
+import { statSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, extname, sep } from "node:path";
+import { createHash } from "node:crypto";
 import { PathNotFoundError, NotDirectoryError } from "./errors.js";
 
 export interface ScannedFile {
   relativePath: string;
   extension: string;
   sizeBytes: number;
+  hash: string;
 }
 
 export interface ScanResult {
@@ -61,11 +63,14 @@ export function scanRepository(repositoryPath: string): ScanResult {
           // Convert OS-specific path separators to deterministic forward slashes
           const relPath = relative(repositoryPath, fullPath).split(sep).join("/");
           const fileStats = statSync(fullPath);
+          const content = readFileSync(fullPath);
+          const hash = createHash("sha256").update(content).digest("hex");
 
           files.push({
             relativePath: relPath,
             extension: ext,
             sizeBytes: fileStats.size,
+            hash,
           });
         }
       }

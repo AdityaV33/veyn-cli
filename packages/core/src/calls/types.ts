@@ -6,6 +6,7 @@ export interface CallRecord {
   targetFile: string | null;
   targetSymbol: string;
   kind: CallKind;
+  line: number;
 }
 
 export interface CallGraphNode {
@@ -19,6 +20,7 @@ export interface CallGraphEdge {
   sourceId: string;
   targetId: string;
   kind: CallKind;
+  line: number;
 }
 
 export interface CallGraphSnapshot {

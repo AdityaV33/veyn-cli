@@ -8,4 +8,6 @@ export * from "./embeddings/index.js";
 export * from "./persistence/index.js";
 export * from "./incremental/index.js";
 export * from "./search/index.js";
+export * from "./health/index.js";
+export * from "./stats/index.js";
 export const core = "core";

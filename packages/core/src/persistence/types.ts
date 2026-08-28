@@ -23,6 +23,7 @@ export interface IndexMetadata {
   callEdgeCount: number;
   chunkCount: number;
   embeddingCount: number;
+  indexDurationMs?: number;
 }
 
 export interface IndexStorage {
@@ -37,7 +38,10 @@ export interface IndexStorage {
 
   // Retrieval for incremental logic
   getFiles(repositoryId: string): Promise<ScannedFile[]>;
+  getSymbols(repositoryId: string): Promise<SymbolRecord[]>;
+  getDependencyNodes(repositoryId: string): Promise<GraphNode[]>;
   getDependencyEdges(repositoryId: string): Promise<GraphEdge[]>;
+  getCallNodes(repositoryId: string): Promise<CallGraphNode[]>;
   getCallEdges(repositoryId: string): Promise<CallGraphEdge[]>;
   getMetadata(repositoryId: string): Promise<IndexMetadata | null>;
   recalculateMetadata(repositoryId: string): Promise<IndexMetadata>;

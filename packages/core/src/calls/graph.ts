@@ -39,8 +39,17 @@ export class CallGraph {
         this.addNode({ id: sourceId, filePath: sourcePath, symbolName: call.sourceSymbol, kind: "function" });
         this.addNode({ id: targetId, filePath: targetPath, symbolName: call.targetSymbol, kind: "function" });
 
-        this.addEdge({ sourceId, targetId, kind: call.kind });
+        this.addEdge({ sourceId, targetId, kind: call.kind, line: call.line });
       }
+    }
+  }
+
+  public load(snapshot: CallGraphSnapshot): void {
+    for (const node of snapshot.nodes) {
+      this.addNode(node);
+    }
+    for (const edge of snapshot.edges) {
+      this.addEdge(edge);
     }
   }
 
@@ -82,11 +91,20 @@ export class CallGraph {
     return Array.from(sources).map(id => this.nodes.get(id)!).filter(Boolean);
   }
 
+  public getOutboundEdges(nodeId: string): CallGraphEdge[] {
+    return this.edgeObjects.filter(e => e.sourceId === nodeId);
+  }
+
+  public getInboundEdges(nodeId: string): CallGraphEdge[] {
+    return this.edgeObjects.filter(e => e.targetId === nodeId);
+  }
+
   public toJSON(): CallGraphSnapshot {
     const nodes = this.getNodes().sort((a, b) => a.id.localeCompare(b.id));
     const edges = this.getEdges().sort((a, b) => {
       if (a.sourceId !== b.sourceId) return a.sourceId.localeCompare(b.sourceId);
       if (a.targetId !== b.targetId) return a.targetId.localeCompare(b.targetId);
+      if (a.line !== b.line) return a.line - b.line;
       return a.kind.localeCompare(b.kind);
     });
     return { nodes, edges };

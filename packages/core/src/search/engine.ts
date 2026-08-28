@@ -1,10 +1,10 @@
 import { IndexStorage, PersistenceError } from "../persistence/index.js";
-import { GroqEmbeddingProvider, CodeChunk } from "../embeddings/index.js";
+import { EmbeddingProvider, CodeChunk } from "../embeddings/index.js";
 import { SearchQuery, SearchResponse, SearchResult, SearchWeights } from "./types.js";
 
 export class SearchEngine {
   private storage: IndexStorage;
-  private provider: GroqEmbeddingProvider;
+  private provider: EmbeddingProvider;
   
   public weights: SearchWeights = {
     semantic: 0.6,
@@ -12,7 +12,7 @@ export class SearchEngine {
     graph: 0.1
   };
 
-  constructor(storage: IndexStorage, provider: GroqEmbeddingProvider) {
+  constructor(storage: IndexStorage, provider: EmbeddingProvider) {
     this.storage = storage;
     this.provider = provider;
   }
@@ -52,7 +52,7 @@ export class SearchEngine {
         throw err; // Re-throw to be handled by CLI
       }
       // If Groq fails
-      throw new Error(`Embedding generation failed: ${err.message}`);
+      throw new Error(`Embedding generation failed: ${err.message}`, { cause: err });
     }
 
     // 2. Lexical Search

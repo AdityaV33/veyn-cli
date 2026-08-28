@@ -1,8 +1,8 @@
 import { Command } from "commander";
-import { 
-  RepositoryIdentityResolver, 
-  MongoIndexStorage, 
-  GroqEmbeddingProvider, 
+import {
+  RepositoryIdentityResolver,
+  MongoIndexStorage,
+  LocalEmbeddingProvider,
   SearchEngine,
   PersistenceError
 } from "@veyn/core";
@@ -20,16 +20,12 @@ export function registerSearchCommand(program: Command) {
           console.error("Please configure MONGODB_URI and try again.\n");
           process.exit(1);
         }
-        
-        if (!process.env.GROQ_API_KEY) {
-          console.error("\nConfiguration Error: GROQ_API_KEY environment variable is missing.");
-          console.error("Veyn search requires a Groq API key to generate query embeddings.");
-          console.error("Please configure GROQ_API_KEY and try again.\n");
-          process.exit(1);
-        }
+
+        // Removed GROQ_API_KEY check as embeddings are now local
+
 
         const absoluteRepoPath = process.cwd();
-        
+
         const resolver = new RepositoryIdentityResolver();
         const identity = resolver.resolve(absoluteRepoPath);
 
@@ -37,11 +33,11 @@ export function registerSearchCommand(program: Command) {
         await storage.connect();
 
         try {
-          const provider = new GroqEmbeddingProvider({ apiKey: process.env.GROQ_API_KEY });
+          const provider = new LocalEmbeddingProvider();
           const engine = new SearchEngine(storage, provider);
 
           console.log(`\nSearch: ${query}\n`);
-          
+
           const response = await engine.search({
             repositoryId: identity.id,
             repositoryPath: absoluteRepoPath,
@@ -75,7 +71,7 @@ export function registerSearchCommand(program: Command) {
           console.error(`\nSearch Error: ${error.message}\n`);
           process.exit(1);
         }
-        
+
         console.error(`\nUnexpected Error: ${error.message}\n`);
         process.exit(1);
       }

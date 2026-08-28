@@ -30,7 +30,8 @@ export class CallExtractor {
           sourceSymbol: sourceSymbolName,
           targetFile,
           targetSymbol: targetSymbolName,
-          kind: "direct"
+          kind: "direct",
+          line: callExpr.getStartLineNumber()
         });
       }
 
@@ -38,6 +39,7 @@ export class CallExtractor {
         if (a.sourceFile !== b.sourceFile) return a.sourceFile.localeCompare(b.sourceFile);
         if (a.sourceSymbol !== b.sourceSymbol) return a.sourceSymbol.localeCompare(b.sourceSymbol);
         if (a.targetSymbol !== b.targetSymbol) return a.targetSymbol.localeCompare(b.targetSymbol);
+        if (a.line !== b.line) return a.line - b.line;
         return (a.targetFile || "").localeCompare(b.targetFile || "");
       });
     } catch (error: any) {

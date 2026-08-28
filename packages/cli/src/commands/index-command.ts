@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { scanRepository, ScannerError, VeynParser, ParserError, SymbolExtractor, DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor, CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver, MongoIndexStorage, PersistenceError, GroqEmbeddingProvider, EmbeddingResult, SymbolRecord } from "@veyn/core";
+import { scanRepository, ScannerError, VeynParser, ParserError, SymbolExtractor, DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor, CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver, MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, EmbeddingResult, SymbolRecord } from "@veyn/core";
 import path from "path";
 
 export function registerIndexCommand(program: Command) {
@@ -8,6 +8,7 @@ export function registerIndexCommand(program: Command) {
     .description("Index a path")
     .action(async (repoPath: string) => {
       try {
+        const startTime = Date.now();
         const absoluteRepoPath = path.resolve(repoPath);
         const result = scanRepository(absoluteRepoPath);
         
@@ -65,12 +66,10 @@ export function registerIndexCommand(program: Command) {
         console.log(`Prepared ${allChunks.length} deterministic code chunks.`);
 
         let embeddings: EmbeddingResult[] = [];
-        if (process.env.GROQ_API_KEY) {
-          const provider = new GroqEmbeddingProvider({ apiKey: process.env.GROQ_API_KEY });
-          embeddings = await provider.embed(allChunks);
-          if (embeddings.length > 0) {
-            console.log(`Generated ${embeddings.length} embeddings via Groq provider.`);
-          }
+        const provider = new LocalEmbeddingProvider();
+        embeddings = await provider.embed(allChunks);
+        if (embeddings.length > 0) {
+          console.log(`Generated ${embeddings.length} embeddings via local BGE provider.`);
         }
 
         // --- Phase 0.10 Persistence ---
@@ -98,6 +97,7 @@ export function registerIndexCommand(program: Command) {
           await storage.saveChunks(identity.id, allChunks);
           await storage.saveEmbeddings(identity.id, embeddings);
 
+          const endTime = Date.now();
           await storage.saveMetadata({
             repositoryId: identity.id,
             repositoryName: identity.name,
@@ -110,7 +110,8 @@ export function registerIndexCommand(program: Command) {
             callNodeCount: callSnapshot.nodes.length,
             callEdgeCount: callSnapshot.edges.length,
             chunkCount: allChunks.length,
-            embeddingCount: embeddings.length
+            embeddingCount: embeddings.length,
+            indexDurationMs: endTime - startTime
           });
 
         } finally {

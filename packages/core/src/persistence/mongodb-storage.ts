@@ -116,16 +116,40 @@ export class MongoIndexStorage implements IndexStorage {
     }));
   }
 
+  public async getSymbols(repositoryId: string): Promise<SymbolRecord[]> {
+    const db = this.getDb();
+    const symbols = await db.collection("symbols").find({ repositoryId }).toArray();
+    return symbols.map(s => ({
+      filePath: s.filePath,
+      name: s.name,
+      kind: s.kind,
+      startLine: s.startLine,
+      endLine: s.endLine
+    }));
+  }
+
+  public async getDependencyNodes(repositoryId: string): Promise<GraphNode[]> {
+    const db = this.getDb();
+    const nodes = await db.collection("dependency_graph_nodes").find({ repositoryId }).toArray();
+    return nodes.map(n => ({ id: n.id, type: n.type, path: n.path }));
+  }
+
   public async getDependencyEdges(repositoryId: string): Promise<GraphEdge[]> {
     const db = this.getDb();
     const edges = await db.collection("dependency_graph_edges").find({ repositoryId }).toArray();
     return edges.map(e => ({ source: e.source, target: e.target, type: e.type }));
   }
 
+  public async getCallNodes(repositoryId: string): Promise<CallGraphNode[]> {
+    const db = this.getDb();
+    const nodes = await db.collection("call_graph_nodes").find({ repositoryId }).toArray();
+    return nodes.map(n => ({ id: n.id, filePath: n.filePath, symbolName: n.symbolName, kind: n.kind }));
+  }
+
   public async getCallEdges(repositoryId: string): Promise<CallGraphEdge[]> {
     const db = this.getDb();
     const edges = await db.collection("call_graph_edges").find({ repositoryId }).toArray();
-    return edges.map(e => ({ sourceId: e.sourceId, targetId: e.targetId, kind: e.kind }));
+    return edges.map(e => ({ sourceId: e.sourceId, targetId: e.targetId, kind: e.kind, line: e.line }));
   }
 
   public async getChunksByIds(repositoryId: string, chunkIds: string[]): Promise<CodeChunk[]> {
@@ -227,7 +251,8 @@ export class MongoIndexStorage implements IndexStorage {
       callNodeCount: meta.callNodeCount,
       callEdgeCount: meta.callEdgeCount,
       chunkCount: meta.chunkCount,
-      embeddingCount: meta.embeddingCount
+      embeddingCount: meta.embeddingCount,
+      indexDurationMs: meta.indexDurationMs
     };
   }
 

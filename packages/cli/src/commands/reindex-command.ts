@@ -1,10 +1,10 @@
 import { Command } from "commander";
-import { 
-  scanRepository, ScannerError, VeynParser, ParserError, SymbolExtractor, 
-  DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor, 
-  CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver, 
-  MongoIndexStorage, PersistenceError, GroqEmbeddingProvider, EmbeddingResult, 
-  SymbolRecord, ChangeDetector, AffectedResolver 
+import {
+  scanRepository, ScannerError, VeynParser, ParserError, SymbolExtractor,
+  DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor,
+  CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver,
+  MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, EmbeddingResult,
+  SymbolRecord, ChangeDetector, AffectedResolver
 } from "@veyn/core";
 import path from "path";
 
@@ -22,7 +22,7 @@ export function registerReindexCommand(program: Command) {
         }
 
         const absoluteRepoPath = path.resolve(repoPath);
-        
+
         const resolver = new RepositoryIdentityResolver();
         const identity = resolver.resolve(absoluteRepoPath);
 
@@ -94,7 +94,7 @@ export function registerReindexCommand(program: Command) {
             const symbols = symbolExtractor.extract(ast);
             extractedSymbolCount += symbols.length;
             allSymbols.push(...symbols);
-            
+
             const imports = dependencyExtractor.extract(ast);
             extractedImportCount += imports.length;
             allImports.push(...imports);
@@ -114,8 +114,8 @@ export function registerReindexCommand(program: Command) {
           const callSnapshot = callGraph.toJSON();
 
           let embeddings: EmbeddingResult[] = [];
-          if (process.env.GROQ_API_KEY && allChunks.length > 0) {
-            const provider = new GroqEmbeddingProvider({ apiKey: process.env.GROQ_API_KEY });
+          if (allChunks.length > 0) {
+            const provider = new LocalEmbeddingProvider();
             embeddings = await provider.embed(allChunks);
           }
 
@@ -157,7 +157,7 @@ export function registerReindexCommand(program: Command) {
           console.error(`Persistence Error: ${error.message}`);
           process.exit(1);
         }
-        
+
         throw error;
       }
     });

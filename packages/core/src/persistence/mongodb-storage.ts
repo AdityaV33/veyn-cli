@@ -212,7 +212,7 @@ export class MongoIndexStorage implements IndexStorage {
         {
           $vectorSearch: {
             index: "vector_index", // Expected Atlas Vector Search index name
-            path: "embedding",
+            path: "vector",
             queryVector: embedding,
             numCandidates: Math.min(limit * 10, 10000),
             limit: limit,

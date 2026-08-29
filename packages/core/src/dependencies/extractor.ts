@@ -33,6 +33,23 @@ export class DependencyExtractor {
         });
       }
 
+      for (const exportDecl of sourceFile.getExportDeclarations()) {
+        if (!exportDecl.hasModuleSpecifier()) continue;
+        
+        const moduleSpecifier = exportDecl.getModuleSpecifierValue()!;
+        const isTypeOnly = exportDecl.isTypeOnly();
+        
+        const moduleSourceFile = exportDecl.getModuleSpecifierSourceFile();
+        const resolvedPath = moduleSourceFile ? moduleSourceFile.getFilePath() : null;
+
+        imports.push({
+          sourceFile: sourcePath,
+          moduleSpecifier,
+          resolvedPath,
+          kind: isTypeOnly ? "type" : "export"
+        });
+      }
+
       // Deterministic sort: sourceFile -> moduleSpecifier -> kind -> resolvedPath
       return imports.sort((a, b) => {
         if (a.sourceFile !== b.sourceFile) return a.sourceFile.localeCompare(b.sourceFile);

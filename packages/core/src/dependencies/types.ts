@@ -1,4 +1,4 @@
-export type ImportKind = "static" | "type" | "side-effect";
+export type ImportKind = "static" | "type" | "side-effect" | "export";
 
 export interface ImportRecord {
   sourceFile: string;

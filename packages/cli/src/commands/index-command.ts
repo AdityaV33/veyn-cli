@@ -12,7 +12,7 @@ export function registerIndexCommand(program: Command) {
         const absoluteRepoPath = path.resolve(repoPath);
         const result = scanRepository(absoluteRepoPath);
         
-        const parser = new VeynParser();
+        const parser = new VeynParser(absoluteRepoPath);
         const symbolExtractor = new SymbolExtractor();
         const dependencyExtractor = new DependencyExtractor();
         const callExtractor = new CallExtractor();
@@ -50,7 +50,7 @@ export function registerIndexCommand(program: Command) {
           allChunks.push(...chunks);
         }
 
-        const dependencyGraph = buildDependencyGraph(allImports, { repositoryRoot: absoluteRepoPath });
+        const dependencyGraph = buildDependencyGraph(result.files, allImports, { repositoryRoot: absoluteRepoPath });
         const callGraph = new CallGraph();
         callGraph.build(allCalls, { repositoryRoot: absoluteRepoPath });
 

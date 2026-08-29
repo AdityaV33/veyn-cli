@@ -2,16 +2,48 @@ import { Project } from "ts-morph";
 import { ParserError, UnsupportedExtensionError } from "./errors.js";
 import type { SourceFile } from "./types.js";
 import fs from "fs";
+import path from "path";
 
 export class VeynParser {
   private project: Project;
 
-  constructor() {
+  constructor(repositoryRoot?: string) {
+    let paths: Record<string, string[]> | undefined = undefined;
+
+    if (repositoryRoot) {
+      const tsconfigPath = path.join(repositoryRoot, "tsconfig.json");
+      if (fs.existsSync(tsconfigPath)) {
+        try {
+          const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
+          if (tsconfig.references && Array.isArray(tsconfig.references)) {
+            paths = {};
+            for (const ref of tsconfig.references) {
+              const refPath = path.join(repositoryRoot, ref.path);
+              const pkgJsonPath = path.join(refPath, "package.json");
+              if (fs.existsSync(pkgJsonPath)) {
+                const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8"));
+                if (pkgJson.name) {
+                  paths[pkgJson.name] = [path.join(ref.path, "src", "index.ts")];
+                  paths[`${pkgJson.name}/*`] = [path.join(ref.path, "src", "*")];
+                }
+              }
+            }
+          }
+        } catch (e) {
+          // Fallback to empty paths if parsing fails
+        }
+      }
+    }
+
+    const compilerOptions: any = { allowJs: false };
+    if (repositoryRoot && paths) {
+      compilerOptions.baseUrl = repositoryRoot;
+      compilerOptions.paths = paths;
+    }
+
     this.project = new Project({
       useInMemoryFileSystem: false,
-      compilerOptions: {
-        allowJs: false
-      }
+      compilerOptions
     });
   }
 

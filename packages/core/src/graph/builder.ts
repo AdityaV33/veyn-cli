@@ -21,7 +21,7 @@ export function buildDependencyGraph(
   const isLocal = (p: string | null) => {
     if (!p) return false;
     const rel = path.relative(context.repositoryRoot, p);
-    return !rel.startsWith("..") && !path.isAbsolute(rel);
+    return !rel.startsWith("..") && !path.isAbsolute(rel) && !rel.includes("node_modules");
   };
 
   // Sort imports to guarantee deterministic graph building (even though toJSON handles final output)

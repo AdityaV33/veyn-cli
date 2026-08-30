@@ -167,6 +167,21 @@ export class MongoIndexStorage implements IndexStorage {
     }));
   }
 
+  public async getChunksByFilePaths(repositoryId: string, paths: string[]): Promise<CodeChunk[]> {
+    if (paths.length === 0) return [];
+    const db = this.getDb();
+    const chunks = await db.collection("chunks").find({ repositoryId, filePath: { $in: paths } }).toArray();
+    return chunks.map(c => ({
+      id: c.id,
+      filePath: c.filePath,
+      startLine: c.startLine,
+      endLine: c.endLine,
+      content: c.content,
+      symbolName: c.symbolName,
+      symbolKind: c.symbolKind
+    }));
+  }
+
   public async searchLexicalChunks(repositoryId: string, terms: string[], limit: number): Promise<CodeChunk[]> {
     const db = this.getDb();
     if (terms.length === 0) return [];

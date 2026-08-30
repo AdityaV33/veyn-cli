@@ -2,6 +2,8 @@ import { IndexStorage, PersistenceError } from "../persistence/index.js";
 import { EmbeddingProvider, CodeChunk } from "../embeddings/index.js";
 import { SearchQuery, SearchResponse, SearchResult, SearchWeights } from "./types.js";
 
+const MAX_EXPANSION_FILES = 10;
+
 export class SearchEngine {
   private storage: IndexStorage;
   private provider: EmbeddingProvider;
@@ -96,45 +98,38 @@ export class SearchEngine {
     }
 
     // 4. Graph Expansion
-    // For each candidate file, find immediate neighbors and boost them.
     const depEdges = await this.storage.getDependencyEdges(query.repositoryId);
-    const candidateFiles = new Set<string>(allCandidateChunks.map(c => c.filePath));
-    
-    const graphBoostMap = new Map<string, number>();
-    
+    const baseCandidateFiles = new Set<string>(allCandidateChunks.map(c => c.filePath));
+    const neighborFiles = new Set<string>();
+
     for (const edge of depEdges) {
       const sourceFile = edge.source.split(":")[0];
       const targetFile = edge.target.split(":")[0];
       
-      // If a candidate file is imported BY sourceFile, sourceFile might be relevant
-      // If a candidate file imports targetFile, targetFile might be relevant
-      if (candidateFiles.has(sourceFile) && !candidateFiles.has(targetFile)) {
-        graphBoostMap.set(targetFile, (graphBoostMap.get(targetFile) || 0) + 0.5);
+      // 1-hop upstream/downstream:
+      if (baseCandidateFiles.has(sourceFile) && !baseCandidateFiles.has(targetFile)) {
+        neighborFiles.add(targetFile);
       }
-      if (candidateFiles.has(targetFile) && !candidateFiles.has(sourceFile)) {
-        graphBoostMap.set(sourceFile, (graphBoostMap.get(sourceFile) || 0) + 0.5);
+      if (baseCandidateFiles.has(targetFile) && !baseCandidateFiles.has(sourceFile)) {
+        neighborFiles.add(sourceFile);
       }
     }
 
-    // We don't fetch new chunks for graph neighbors in this bounded phase, 
-    // we just apply graph scores to existing chunks that belong to boosted files.
-    // If a chunk's file is in graphBoostMap, it gets a graphScore.
-    // Wait, the prompt says "graph expansion... can contribute additional related candidates."
-    // Let's just find the lexical chunks for those expanded files? 
-    // To keep it deterministic and bounded, we will just use the graph score for existing candidates.
-    // Or we could query 1 chunk per expanded file. Let's just score existing candidates 
-    // based on whether they are in the neighborhood of OTHER candidates.
-    
-    // Actually, to expand, let's just add a small graph score if a candidate file is connected to another candidate file.
-    for (const chunk of allCandidateChunks) {
-      let gScore = 0;
-      for (const edge of depEdges) {
-        const sourceFile = edge.source.split(":")[0];
-        const targetFile = edge.target.split(":")[0];
-        if (chunk.filePath === sourceFile && candidateFiles.has(targetFile)) gScore += 0.5;
-        if (chunk.filePath === targetFile && candidateFiles.has(sourceFile)) gScore += 0.5;
+    // Impose bounded maximum
+    const expandedFilesToFetch = Array.from(neighborFiles).slice(0, MAX_EXPANSION_FILES);
+    const graphBoostMap = new Map<string, number>();
+
+    if (expandedFilesToFetch.length > 0) {
+      const expandedChunks = await this.storage.getChunksByFilePaths(query.repositoryId, expandedFilesToFetch);
+
+      for (const chunk of expandedChunks) {
+        if (!candidateIds.has(chunk.id)) {
+          candidateIds.add(chunk.id);
+          allCandidateChunks.push(chunk);
+          // Assign non-zero graph score because it was discovered via 1-hop graph relationship
+          graphBoostMap.set(chunk.id, 1.0);
+        }
       }
-      graphBoostMap.set(chunk.id, Math.min(1.0, gScore));
     }
 
     // 5. Hybrid Ranking

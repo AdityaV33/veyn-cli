@@ -12,6 +12,7 @@ export function normalizePath(absolutePath: string, rootPath: string): string {
 }
 
 export function buildDependencyGraph(
+  files: { relativePath: string }[],
   imports: ImportRecord[],
   context: GraphBuildContext
 ): DependencyGraph {
@@ -20,7 +21,7 @@ export function buildDependencyGraph(
   const isLocal = (p: string | null) => {
     if (!p) return false;
     const rel = path.relative(context.repositoryRoot, p);
-    return !rel.startsWith("..") && !path.isAbsolute(rel);
+    return !rel.startsWith("..") && !path.isAbsolute(rel) && !rel.includes("node_modules");
   };
 
   // Sort imports to guarantee deterministic graph building (even though toJSON handles final output)
@@ -32,18 +33,29 @@ export function buildDependencyGraph(
     return aPath.localeCompare(bPath);
   });
 
-  // First pass: add nodes
+  // First pass: add nodes from explicitly scanned files
+  const sortedFiles = [...files].sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+  for (const file of sortedFiles) {
+    const id = normalizePath(path.join(context.repositoryRoot, file.relativePath), context.repositoryRoot);
+    graph.addNode({ id, type: "file", path: id });
+  }
+
+  // Second pass: add nodes from imports that might be external/typings (e.g., node_modules or compiled files)
   for (const record of sortedImports) {
     const sourceId = normalizePath(record.sourceFile, context.repositoryRoot);
-    graph.addNode({ id: sourceId, type: "file", path: sourceId });
+    if (!graph.getNode(sourceId)) {
+      graph.addNode({ id: sourceId, type: "file", path: sourceId });
+    }
 
     if (isLocal(record.resolvedPath)) {
       const targetId = normalizePath(record.resolvedPath as string, context.repositoryRoot);
-      graph.addNode({ id: targetId, type: "file", path: targetId });
+      if (!graph.getNode(targetId)) {
+        graph.addNode({ id: targetId, type: "file", path: targetId });
+      }
     }
   }
 
-  // Second pass: add edges
+  // Third pass: add edges
   for (const record of sortedImports) {
     if (isLocal(record.resolvedPath)) {
       const sourceId = normalizePath(record.sourceFile, context.repositoryRoot);

@@ -1,0 +1,1291 @@
+{
+  "nodes": [
+    {
+      "id": "packages/agent/src/index.ts",
+      "type": "file",
+      "path": "packages/agent/src/index.ts"
+    },
+    {
+      "id": "packages/cli/src/__tests__/cli.test.ts",
+      "type": "file",
+      "path": "packages/cli/src/__tests__/cli.test.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/architecture.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/architecture.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/explain.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/explain.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/graph.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/graph.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/health.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/health.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/index-command.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/index-command.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/index.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/index.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/investigate.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/investigate.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/reindex-command.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/reindex-command.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/search-command.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/search-command.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/serve.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/serve.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/stats.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/stats.ts"
+    },
+    {
+      "id": "packages/cli/src/commands/trace.ts",
+      "type": "file",
+      "path": "packages/cli/src/commands/trace.ts"
+    },
+    {
+      "id": "packages/cli/src/index.ts",
+      "type": "file",
+      "path": "packages/cli/src/index.ts"
+    },
+    {
+      "id": "packages/core/src/calls/__tests__/extractor.test.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/__tests__/extractor.test.ts"
+    },
+    {
+      "id": "packages/core/src/calls/__tests__/graph.test.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/__tests__/graph.test.ts"
+    },
+    {
+      "id": "packages/core/src/calls/__tests__/traversal.test.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/__tests__/traversal.test.ts"
+    },
+    {
+      "id": "packages/core/src/calls/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/errors.ts"
+    },
+    {
+      "id": "packages/core/src/calls/extractor.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/extractor.ts"
+    },
+    {
+      "id": "packages/core/src/calls/graph.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/graph.ts"
+    },
+    {
+      "id": "packages/core/src/calls/index.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/index.ts"
+    },
+    {
+      "id": "packages/core/src/calls/traversal.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/traversal.ts"
+    },
+    {
+      "id": "packages/core/src/calls/types.ts",
+      "type": "file",
+      "path": "packages/core/src/calls/types.ts"
+    },
+    {
+      "id": "packages/core/src/dependencies/__tests__/extractor.test.ts",
+      "type": "file",
+      "path": "packages/core/src/dependencies/__tests__/extractor.test.ts"
+    },
+    {
+      "id": "packages/core/src/dependencies/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/dependencies/errors.ts"
+    },
+    {
+      "id": "packages/core/src/dependencies/extractor.ts",
+      "type": "file",
+      "path": "packages/core/src/dependencies/extractor.ts"
+    },
+    {
+      "id": "packages/core/src/dependencies/index.ts",
+      "type": "file",
+      "path": "packages/core/src/dependencies/index.ts"
+    },
+    {
+      "id": "packages/core/src/dependencies/types.ts",
+      "type": "file",
+      "path": "packages/core/src/dependencies/types.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/__tests__/chunker.test.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/__tests__/chunker.test.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/__tests__/provider.test.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/__tests__/provider.test.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/chunker.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/chunker.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/errors.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/groq-provider.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/groq-provider.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/index.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/index.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/local-provider.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/local-provider.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/provider.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/provider.ts"
+    },
+    {
+      "id": "packages/core/src/embeddings/types.ts",
+      "type": "file",
+      "path": "packages/core/src/embeddings/types.ts"
+    },
+    {
+      "id": "packages/core/src/graph/__tests__/graph.test.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/__tests__/graph.test.ts"
+    },
+    {
+      "id": "packages/core/src/graph/__tests__/traversal.test.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/__tests__/traversal.test.ts"
+    },
+    {
+      "id": "packages/core/src/graph/builder.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/builder.ts"
+    },
+    {
+      "id": "packages/core/src/graph/graph.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/graph.ts"
+    },
+    {
+      "id": "packages/core/src/graph/index.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/index.ts"
+    },
+    {
+      "id": "packages/core/src/graph/traversal.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/traversal.ts"
+    },
+    {
+      "id": "packages/core/src/graph/types.ts",
+      "type": "file",
+      "path": "packages/core/src/graph/types.ts"
+    },
+    {
+      "id": "packages/core/src/health/__tests__/health.test.ts",
+      "type": "file",
+      "path": "packages/core/src/health/__tests__/health.test.ts"
+    },
+    {
+      "id": "packages/core/src/health/health.ts",
+      "type": "file",
+      "path": "packages/core/src/health/health.ts"
+    },
+    {
+      "id": "packages/core/src/health/index.ts",
+      "type": "file",
+      "path": "packages/core/src/health/index.ts"
+    },
+    {
+      "id": "packages/core/src/incremental/__tests__/detector.test.ts",
+      "type": "file",
+      "path": "packages/core/src/incremental/__tests__/detector.test.ts"
+    },
+    {
+      "id": "packages/core/src/incremental/__tests__/resolver.test.ts",
+      "type": "file",
+      "path": "packages/core/src/incremental/__tests__/resolver.test.ts"
+    },
+    {
+      "id": "packages/core/src/incremental/detector.ts",
+      "type": "file",
+      "path": "packages/core/src/incremental/detector.ts"
+    },
+    {
+      "id": "packages/core/src/incremental/index.ts",
+      "type": "file",
+      "path": "packages/core/src/incremental/index.ts"
+    },
+    {
+      "id": "packages/core/src/incremental/resolver.ts",
+      "type": "file",
+      "path": "packages/core/src/incremental/resolver.ts"
+    },
+    {
+      "id": "packages/core/src/incremental/types.ts",
+      "type": "file",
+      "path": "packages/core/src/incremental/types.ts"
+    },
+    {
+      "id": "packages/core/src/index.ts",
+      "type": "file",
+      "path": "packages/core/src/index.ts"
+    },
+    {
+      "id": "packages/core/src/parser/__tests__/parser.test.ts",
+      "type": "file",
+      "path": "packages/core/src/parser/__tests__/parser.test.ts"
+    },
+    {
+      "id": "packages/core/src/parser/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/parser/errors.ts"
+    },
+    {
+      "id": "packages/core/src/parser/index.ts",
+      "type": "file",
+      "path": "packages/core/src/parser/index.ts"
+    },
+    {
+      "id": "packages/core/src/parser/parser.ts",
+      "type": "file",
+      "path": "packages/core/src/parser/parser.ts"
+    },
+    {
+      "id": "packages/core/src/parser/types.ts",
+      "type": "file",
+      "path": "packages/core/src/parser/types.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/__tests__/mongodb-storage.test.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/__tests__/mongodb-storage.test.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/__tests__/repository.test.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/__tests__/repository.test.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/errors.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/index.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/index.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/mongodb-storage.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/mongodb-storage.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/repository.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/repository.ts"
+    },
+    {
+      "id": "packages/core/src/persistence/types.ts",
+      "type": "file",
+      "path": "packages/core/src/persistence/types.ts"
+    },
+    {
+      "id": "packages/core/src/scanner/__tests__/scanner.test.ts",
+      "type": "file",
+      "path": "packages/core/src/scanner/__tests__/scanner.test.ts"
+    },
+    {
+      "id": "packages/core/src/scanner/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/scanner/errors.ts"
+    },
+    {
+      "id": "packages/core/src/scanner/index.ts",
+      "type": "file",
+      "path": "packages/core/src/scanner/index.ts"
+    },
+    {
+      "id": "packages/core/src/scanner/scanner.ts",
+      "type": "file",
+      "path": "packages/core/src/scanner/scanner.ts"
+    },
+    {
+      "id": "packages/core/src/search/__tests__/engine.test.ts",
+      "type": "file",
+      "path": "packages/core/src/search/__tests__/engine.test.ts"
+    },
+    {
+      "id": "packages/core/src/search/engine.ts",
+      "type": "file",
+      "path": "packages/core/src/search/engine.ts"
+    },
+    {
+      "id": "packages/core/src/search/index.ts",
+      "type": "file",
+      "path": "packages/core/src/search/index.ts"
+    },
+    {
+      "id": "packages/core/src/search/types.ts",
+      "type": "file",
+      "path": "packages/core/src/search/types.ts"
+    },
+    {
+      "id": "packages/core/src/stats/__tests__/stats.test.ts",
+      "type": "file",
+      "path": "packages/core/src/stats/__tests__/stats.test.ts"
+    },
+    {
+      "id": "packages/core/src/stats/index.ts",
+      "type": "file",
+      "path": "packages/core/src/stats/index.ts"
+    },
+    {
+      "id": "packages/core/src/stats/stats.ts",
+      "type": "file",
+      "path": "packages/core/src/stats/stats.ts"
+    },
+    {
+      "id": "packages/core/src/symbols/__tests__/extractor.test.ts",
+      "type": "file",
+      "path": "packages/core/src/symbols/__tests__/extractor.test.ts"
+    },
+    {
+      "id": "packages/core/src/symbols/errors.ts",
+      "type": "file",
+      "path": "packages/core/src/symbols/errors.ts"
+    },
+    {
+      "id": "packages/core/src/symbols/extractor.ts",
+      "type": "file",
+      "path": "packages/core/src/symbols/extractor.ts"
+    },
+    {
+      "id": "packages/core/src/symbols/index.ts",
+      "type": "file",
+      "path": "packages/core/src/symbols/index.ts"
+    },
+    {
+      "id": "packages/core/src/symbols/types.ts",
+      "type": "file",
+      "path": "packages/core/src/symbols/types.ts"
+    },
+    {
+      "id": "packages/server/src/index.ts",
+      "type": "file",
+      "path": "packages/server/src/index.ts"
+    },
+    {
+      "id": "vitest.config.ts",
+      "type": "file",
+      "path": "vitest.config.ts"
+    }
+  ],
+  "edges": [
+    {
+      "source": "packages/agent/src/index.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/__tests__/cli.test.ts",
+      "target": "packages/cli/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/architecture.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/graph.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/health.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index-command.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/architecture.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/explain.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/health.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/index-command.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/investigate.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/reindex-command.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/search-command.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/serve.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/stats.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/index.ts",
+      "target": "packages/cli/src/commands/trace.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/reindex-command.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/search-command.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/stats.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/commands/trace.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/cli/src/index.ts",
+      "target": "packages/cli/src/commands/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/extractor.test.ts",
+      "target": "packages/core/src/calls/extractor.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/extractor.test.ts",
+      "target": "packages/core/src/parser/parser.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/graph.test.ts",
+      "target": "packages/core/src/calls/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/graph.test.ts",
+      "target": "packages/core/src/calls/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/traversal.test.ts",
+      "target": "packages/core/src/calls/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/traversal.test.ts",
+      "target": "packages/core/src/calls/traversal.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/traversal.test.ts",
+      "target": "packages/core/src/calls/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/__tests__/traversal.test.ts",
+      "target": "packages/core/src/symbols/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/extractor.ts",
+      "target": "packages/core/src/calls/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/extractor.ts",
+      "target": "packages/core/src/calls/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/graph.ts",
+      "target": "packages/core/src/calls/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/index.ts",
+      "target": "packages/core/src/calls/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/index.ts",
+      "target": "packages/core/src/calls/extractor.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/index.ts",
+      "target": "packages/core/src/calls/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/index.ts",
+      "target": "packages/core/src/calls/traversal.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/index.ts",
+      "target": "packages/core/src/calls/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/traversal.ts",
+      "target": "packages/core/src/calls/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/calls/traversal.ts",
+      "target": "packages/core/src/symbols/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/__tests__/extractor.test.ts",
+      "target": "packages/core/src/dependencies/extractor.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/__tests__/extractor.test.ts",
+      "target": "packages/core/src/parser/parser.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/extractor.ts",
+      "target": "packages/core/src/dependencies/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/extractor.ts",
+      "target": "packages/core/src/dependencies/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/index.ts",
+      "target": "packages/core/src/dependencies/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/index.ts",
+      "target": "packages/core/src/dependencies/extractor.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/dependencies/index.ts",
+      "target": "packages/core/src/dependencies/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/__tests__/chunker.test.ts",
+      "target": "packages/core/src/embeddings/chunker.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/__tests__/chunker.test.ts",
+      "target": "packages/core/src/parser/parser.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/__tests__/provider.test.ts",
+      "target": "packages/core/src/embeddings/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/__tests__/provider.test.ts",
+      "target": "packages/core/src/embeddings/groq-provider.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/__tests__/provider.test.ts",
+      "target": "packages/core/src/embeddings/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/chunker.ts",
+      "target": "packages/core/src/embeddings/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/groq-provider.ts",
+      "target": "packages/core/src/embeddings/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/groq-provider.ts",
+      "target": "packages/core/src/embeddings/provider.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/groq-provider.ts",
+      "target": "packages/core/src/embeddings/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/index.ts",
+      "target": "packages/core/src/embeddings/chunker.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/index.ts",
+      "target": "packages/core/src/embeddings/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/index.ts",
+      "target": "packages/core/src/embeddings/groq-provider.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/index.ts",
+      "target": "packages/core/src/embeddings/local-provider.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/index.ts",
+      "target": "packages/core/src/embeddings/provider.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/index.ts",
+      "target": "packages/core/src/embeddings/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/local-provider.ts",
+      "target": "packages/core/src/embeddings/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/local-provider.ts",
+      "target": "packages/core/src/embeddings/provider.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/local-provider.ts",
+      "target": "packages/core/src/embeddings/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/embeddings/provider.ts",
+      "target": "packages/core/src/embeddings/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/__tests__/graph.test.ts",
+      "target": "packages/core/src/dependencies/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/__tests__/graph.test.ts",
+      "target": "packages/core/src/graph/builder.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/__tests__/traversal.test.ts",
+      "target": "packages/core/src/graph/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/__tests__/traversal.test.ts",
+      "target": "packages/core/src/graph/traversal.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/__tests__/traversal.test.ts",
+      "target": "packages/core/src/graph/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/builder.ts",
+      "target": "packages/core/src/dependencies/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/builder.ts",
+      "target": "packages/core/src/graph/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/graph.ts",
+      "target": "packages/core/src/graph/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/index.ts",
+      "target": "packages/core/src/graph/builder.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/index.ts",
+      "target": "packages/core/src/graph/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/index.ts",
+      "target": "packages/core/src/graph/traversal.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/index.ts",
+      "target": "packages/core/src/graph/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/traversal.ts",
+      "target": "packages/core/src/graph/graph.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/graph/traversal.ts",
+      "target": "packages/core/src/graph/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/__tests__/health.test.ts",
+      "target": "packages/core/src/calls/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/__tests__/health.test.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/__tests__/health.test.ts",
+      "target": "packages/core/src/health/health.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/__tests__/health.test.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/__tests__/health.test.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/__tests__/health.test.ts",
+      "target": "packages/core/src/symbols/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/health.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/health.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/health/index.ts",
+      "target": "packages/core/src/health/health.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/__tests__/detector.test.ts",
+      "target": "packages/core/src/incremental/detector.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/__tests__/detector.test.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/__tests__/resolver.test.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/__tests__/resolver.test.ts",
+      "target": "packages/core/src/incremental/resolver.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/detector.ts",
+      "target": "packages/core/src/incremental/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/detector.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/index.ts",
+      "target": "packages/core/src/incremental/detector.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/index.ts",
+      "target": "packages/core/src/incremental/resolver.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/index.ts",
+      "target": "packages/core/src/incremental/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/resolver.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/resolver.ts",
+      "target": "packages/core/src/incremental/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/incremental/types.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/calls/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/dependencies/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/embeddings/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/health/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/incremental/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/parser/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/search/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/stats/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/index.ts",
+      "target": "packages/core/src/symbols/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/__tests__/parser.test.ts",
+      "target": "packages/core/src/parser/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/__tests__/parser.test.ts",
+      "target": "packages/core/src/parser/parser.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/index.ts",
+      "target": "packages/core/src/parser/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/index.ts",
+      "target": "packages/core/src/parser/parser.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/index.ts",
+      "target": "packages/core/src/parser/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/parser.ts",
+      "target": "packages/core/src/parser/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/parser/parser.ts",
+      "target": "packages/core/src/parser/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/__tests__/mongodb-storage.test.ts",
+      "target": "packages/core/src/persistence/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/__tests__/mongodb-storage.test.ts",
+      "target": "packages/core/src/persistence/mongodb-storage.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/__tests__/repository.test.ts",
+      "target": "packages/core/src/persistence/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/__tests__/repository.test.ts",
+      "target": "packages/core/src/persistence/repository.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/index.ts",
+      "target": "packages/core/src/persistence/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/index.ts",
+      "target": "packages/core/src/persistence/mongodb-storage.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/index.ts",
+      "target": "packages/core/src/persistence/repository.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/index.ts",
+      "target": "packages/core/src/persistence/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/calls/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/dependencies/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/embeddings/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/persistence/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/persistence/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/mongodb-storage.ts",
+      "target": "packages/core/src/symbols/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/repository.ts",
+      "target": "packages/core/src/persistence/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/repository.ts",
+      "target": "packages/core/src/persistence/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/types.ts",
+      "target": "packages/core/src/calls/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/types.ts",
+      "target": "packages/core/src/dependencies/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/types.ts",
+      "target": "packages/core/src/embeddings/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/types.ts",
+      "target": "packages/core/src/graph/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/types.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/persistence/types.ts",
+      "target": "packages/core/src/symbols/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/scanner/__tests__/scanner.test.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/scanner/index.ts",
+      "target": "packages/core/src/scanner/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/scanner/index.ts",
+      "target": "packages/core/src/scanner/scanner.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/scanner/scanner.ts",
+      "target": "packages/core/src/scanner/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/__tests__/engine.test.ts",
+      "target": "packages/core/src/embeddings/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/__tests__/engine.test.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/__tests__/engine.test.ts",
+      "target": "packages/core/src/search/engine.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/__tests__/engine.test.ts",
+      "target": "packages/core/src/search/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/engine.ts",
+      "target": "packages/core/src/embeddings/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/engine.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/engine.ts",
+      "target": "packages/core/src/search/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/index.ts",
+      "target": "packages/core/src/search/engine.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/search/index.ts",
+      "target": "packages/core/src/search/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/__tests__/stats.test.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/__tests__/stats.test.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/__tests__/stats.test.ts",
+      "target": "packages/core/src/stats/stats.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/index.ts",
+      "target": "packages/core/src/stats/stats.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/stats.ts",
+      "target": "packages/core/src/incremental/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/stats.ts",
+      "target": "packages/core/src/persistence/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/stats/stats.ts",
+      "target": "packages/core/src/scanner/index.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/__tests__/extractor.test.ts",
+      "target": "packages/core/src/parser/parser.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/__tests__/extractor.test.ts",
+      "target": "packages/core/src/symbols/extractor.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/extractor.ts",
+      "target": "packages/core/src/symbols/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/extractor.ts",
+      "target": "packages/core/src/symbols/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/index.ts",
+      "target": "packages/core/src/symbols/errors.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/index.ts",
+      "target": "packages/core/src/symbols/extractor.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/core/src/symbols/index.ts",
+      "target": "packages/core/src/symbols/types.ts",
+      "type": "imports"
+    },
+    {
+      "source": "packages/server/src/index.ts",
+      "target": "packages/core/src/index.ts",
+      "type": "imports"
+    }
+  ]
+}

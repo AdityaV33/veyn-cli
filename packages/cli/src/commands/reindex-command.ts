@@ -53,8 +53,9 @@ export function registerReindexCommand(program: Command) {
 
           // 6. Determine affected files
           const existingEdges = await storage.getDependencyEdges(identity.id);
+          const existingCallEdges = await storage.getCallEdges(identity.id);
           const affectedResolver = new AffectedResolver();
-          const affectedFiles = affectedResolver.resolve(changes, existingEdges);
+          const affectedFiles = affectedResolver.resolve(changes, existingEdges, existingCallEdges);
 
           console.log(`\nRepository: ${identity.name}`);
           console.log(`\nChanges detected:`);

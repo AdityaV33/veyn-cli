@@ -1,8 +1,9 @@
 import { GraphEdge } from "../graph/index.js";
+import { CallGraphEdge } from "../calls/index.js";
 import { FileChangeSet } from "./types.js";
 
 export class AffectedResolver {
-  public resolve(changes: FileChangeSet, edges: GraphEdge[]): string[] {
+  public resolve(changes: FileChangeSet, edges: GraphEdge[], callEdges?: CallGraphEdge[]): string[] {
     const affected = new Set<string>();
 
     // 1. All explicitly added, modified, and deleted files are affected
@@ -15,6 +16,7 @@ export class AffectedResolver {
     // We want to know: who depends on B? Map B's file -> array of A's files
     const reverseMap = new Map<string, Set<string>>();
 
+    // Process Dependency Edges
     for (const edge of edges) {
       const sourceFile = this.extractFileFromId(edge.source);
       const targetFile = this.extractFileFromId(edge.target);
@@ -24,6 +26,23 @@ export class AffectedResolver {
           reverseMap.set(targetFile, new Set<string>());
         }
         reverseMap.get(targetFile)!.add(sourceFile);
+      }
+    }
+
+    // Process Call Graph Edges (if provided)
+    // If function A (sourceId) calls function B (targetId), A depends on B.
+    // If B changes, A is affected. Thus map targetFile -> array of sourceFiles.
+    if (callEdges) {
+      for (const edge of callEdges) {
+        const sourceFile = this.extractFileFromId(edge.sourceId);
+        const targetFile = this.extractFileFromId(edge.targetId);
+
+        if (sourceFile && targetFile && sourceFile !== targetFile) {
+          if (!reverseMap.has(targetFile)) {
+            reverseMap.set(targetFile, new Set<string>());
+          }
+          reverseMap.get(targetFile)!.add(sourceFile);
+        }
       }
     }
 

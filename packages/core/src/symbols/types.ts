@@ -15,3 +15,9 @@ export interface SymbolRecord {
   startLine: number;
   endLine: number;
 }
+
+export interface ReferenceRecord {
+  sourceFile: string;
+  sourceLine: number;
+  targetId: string;
+}

@@ -4,7 +4,7 @@ import {
   DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor,
   CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver,
   MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, EmbeddingResult,
-  SymbolRecord, ChangeDetector, AffectedResolver
+  SymbolRecord, ChangeDetector, AffectedResolver, ReferenceExtractor, ReferenceRecord
 } from "@veyn/core";
 import path from "path";
 
@@ -74,6 +74,7 @@ export function registerReindexCommand(program: Command) {
           const symbolExtractor = new SymbolExtractor();
           const dependencyExtractor = new DependencyExtractor();
           const callExtractor = new CallExtractor();
+          const referenceExtractor = new ReferenceExtractor();
           const chunker = new Chunker();
 
           let parsedCount = 0;
@@ -82,6 +83,7 @@ export function registerReindexCommand(program: Command) {
           const allSymbols: SymbolRecord[] = [];
           const allImports: ImportRecord[] = [];
           const allCalls: CallRecord[] = [];
+          const allReferences: ReferenceRecord[] = [];
           const allChunks: CodeChunk[] = [];
 
           const asts = scannedFilesToParse.map(file => {
@@ -107,6 +109,27 @@ export function registerReindexCommand(program: Command) {
             allChunks.push(...chunks);
           }
 
+          const existingSymbols = await storage.getSymbols(identity.id);
+          const trackedSymbols = new Set<string>();
+          for (const s of existingSymbols) {
+             if (!affectedFiles.includes(s.filePath)) {
+                 trackedSymbols.add(`${s.filePath}:${s.name}`);
+             }
+          }
+          for (const sym of allSymbols) {
+             trackedSymbols.add(`${sym.filePath}:${sym.name}`);
+          }
+
+          let extractedReferenceCount = 0;
+          for (const ast of asts) {
+            const refs = referenceExtractor.extract(ast, { 
+              repositoryRoot: absoluteRepoPath,
+              trackedSymbols 
+            });
+            extractedReferenceCount += refs.length;
+            allReferences.push(...refs);
+          }
+
           const dependencyGraph = buildDependencyGraph(result.files, allImports, { repositoryRoot: absoluteRepoPath });
           const callGraph = new CallGraph();
           callGraph.build(allCalls, { repositoryRoot: absoluteRepoPath });
@@ -128,6 +151,7 @@ export function registerReindexCommand(program: Command) {
           await storage.saveDependencies(identity.id, allImports);
           await storage.saveDependencyGraph(identity.id, depSnapshot.nodes, depSnapshot.edges);
           await storage.saveCallGraph(identity.id, callSnapshot.nodes, callSnapshot.edges);
+          await storage.saveReferences(identity.id, allReferences);
           await storage.saveChunks(identity.id, allChunks);
           if (embeddings.length > 0) {
             await storage.saveEmbeddings(identity.id, embeddings);
@@ -140,6 +164,7 @@ export function registerReindexCommand(program: Command) {
           console.log(`  Symbols: ${extractedSymbolCount}`);
           console.log(`  Imports: ${extractedImportCount}`);
           console.log(`  Calls: ${allCalls.length}`);
+          console.log(`  References: ${extractedReferenceCount}`);
           console.log(`  Chunks: ${allChunks.length}`);
           console.log(`\nIndex updated successfully.`);
 

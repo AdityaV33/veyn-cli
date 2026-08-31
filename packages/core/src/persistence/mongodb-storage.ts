@@ -2,8 +2,8 @@ import { MongoClient, Db } from "mongodb";
 import { IndexStorage, IndexMetadata } from "./types.js";
 import { PersistenceConfigurationError, PersistenceError } from "./errors.js";
 import { ScannedFile } from "../scanner/index.js";
-import { SymbolRecord } from "../symbols/index.js";
 import { ImportRecord } from "../dependencies/index.js";
+import { SymbolRecord, ReferenceRecord } from "../symbols/index.js";
 import { GraphNode, GraphEdge } from "../graph/index.js";
 import { CallGraphNode, CallGraphEdge } from "../calls/index.js";
 import { CodeChunk, EmbeddingResult } from "../embeddings/index.js";
@@ -63,6 +63,7 @@ export class MongoIndexStorage implements IndexStorage {
       await db.collection("dependency_graph_edges").deleteMany(query);
       await db.collection("call_graph_nodes").deleteMany(query);
       await db.collection("call_graph_edges").deleteMany(query);
+      await db.collection("references").deleteMany(query);
       await db.collection("chunks").deleteMany(query);
       await db.collection("embeddings").deleteMany(query);
     } catch (err: any) {
@@ -81,6 +82,7 @@ export class MongoIndexStorage implements IndexStorage {
     await db.collection("files").deleteMany({ repositoryId, relativePath: { $in: filePaths } });
     await db.collection("symbols").deleteMany({ repositoryId, filePath: { $in: filePaths } });
     await db.collection("dependencies").deleteMany({ repositoryId, sourceFile: { $in: filePaths } });
+    await db.collection("references").deleteMany({ repositoryId, sourceFile: { $in: filePaths } });
     await db.collection("chunks").deleteMany({ repositoryId, filePath: { $in: filePaths } });
     
     if (chunkIds.length > 0) {
@@ -147,6 +149,16 @@ export class MongoIndexStorage implements IndexStorage {
     const db = this.getDb();
     const edges = await db.collection("call_graph_edges").find({ repositoryId }).toArray();
     return edges.map(e => ({ sourceId: e.sourceId, targetId: e.targetId, kind: e.kind, line: e.line }));
+  }
+
+  public async getReferences(repositoryId: string, targetId: string): Promise<ReferenceRecord[]> {
+    const db = this.getDb();
+    const refs = await db.collection("references").find({ repositoryId, targetId }).toArray();
+    return refs.map(r => ({
+      sourceFile: r.sourceFile,
+      sourceLine: r.sourceLine,
+      targetId: r.targetId
+    }));
   }
 
   public async getChunksByIds(repositoryId: string, chunkIds: string[]): Promise<CodeChunk[]> {
@@ -262,6 +274,7 @@ export class MongoIndexStorage implements IndexStorage {
       dependencyEdgeCount: meta.dependencyEdgeCount,
       callNodeCount: meta.callNodeCount,
       callEdgeCount: meta.callEdgeCount,
+      referenceCount: meta.referenceCount,
       chunkCount: meta.chunkCount,
       embeddingCount: meta.embeddingCount,
       indexDurationMs: meta.indexDurationMs
@@ -340,6 +353,16 @@ export class MongoIndexStorage implements IndexStorage {
     }
   }
 
+  public async saveReferences(repositoryId: string, references: ReferenceRecord[]): Promise<void> {
+    if (references.length === 0) return;
+    try {
+      const docs = references.map(r => ({ repositoryId, ...r }));
+      await this.getDb().collection("references").insertMany(docs);
+    } catch (err: any) {
+      throw new PersistenceError(`Failed to save references: ${err.message}`);
+    }
+  }
+
   public async saveChunks(repositoryId: string, chunks: CodeChunk[]): Promise<void> {
     if (chunks.length === 0) return;
     try {
@@ -365,7 +388,7 @@ export class MongoIndexStorage implements IndexStorage {
     const meta = await this.getMetadata(repositoryId);
     if (!meta) throw new PersistenceError(`Cannot recalculate metadata for unknown repository ${repositoryId}`);
 
-    const [fileCount, symbolCount, importCount, depNodeCount, depEdgeCount, callNodeCount, callEdgeCount, chunkCount, embeddingCount] = await Promise.all([
+    const [fileCount, symbolCount, importCount, depNodeCount, depEdgeCount, callNodeCount, callEdgeCount, referenceCount, chunkCount, embeddingCount] = await Promise.all([
       db.collection("files").countDocuments({ repositoryId }),
       db.collection("symbols").countDocuments({ repositoryId }),
       db.collection("dependencies").countDocuments({ repositoryId }),
@@ -373,6 +396,7 @@ export class MongoIndexStorage implements IndexStorage {
       db.collection("dependency_graph_edges").countDocuments({ repositoryId }),
       db.collection("call_graph_nodes").countDocuments({ repositoryId }),
       db.collection("call_graph_edges").countDocuments({ repositoryId }),
+      db.collection("references").countDocuments({ repositoryId }),
       db.collection("chunks").countDocuments({ repositoryId }),
       db.collection("embeddings").countDocuments({ repositoryId })
     ]);
@@ -387,6 +411,7 @@ export class MongoIndexStorage implements IndexStorage {
       dependencyEdgeCount: depEdgeCount,
       callNodeCount,
       callEdgeCount,
+      referenceCount,
       chunkCount,
       embeddingCount
     };

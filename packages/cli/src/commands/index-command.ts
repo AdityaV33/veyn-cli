@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { scanRepository, ScannerError, VeynParser, ParserError, SymbolExtractor, DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor, CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver, MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, EmbeddingResult, SymbolRecord } from "@veyn/core";
+import { scanRepository, ScannerError, VeynParser, ParserError, SymbolExtractor, DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor, CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver, MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, EmbeddingResult, SymbolRecord, ReferenceExtractor, ReferenceRecord } from "@veyn/core";
 import path from "path";
 
 export function registerIndexCommand(program: Command) {
@@ -16,6 +16,7 @@ export function registerIndexCommand(program: Command) {
         const symbolExtractor = new SymbolExtractor();
         const dependencyExtractor = new DependencyExtractor();
         const callExtractor = new CallExtractor();
+        const referenceExtractor = new ReferenceExtractor();
         const chunker = new Chunker();
         
         let parsedCount = 0;
@@ -24,6 +25,7 @@ export function registerIndexCommand(program: Command) {
         const allSymbols: SymbolRecord[] = [];
         const allImports: ImportRecord[] = [];
         const allCalls: CallRecord[] = [];
+        const allReferences: ReferenceRecord[] = [];
         const allChunks: CodeChunk[] = [];
 
         // Parsing files first is important so that cross-file call resolution works properly
@@ -32,12 +34,19 @@ export function registerIndexCommand(program: Command) {
           return parser.parseFile(absoluteFilePath);
         });
 
+        const trackedSymbols = new Set<string>();
+
         for (const ast of asts) {
           parsedCount++;
 
           const symbols = symbolExtractor.extract(ast);
           extractedSymbolCount += symbols.length;
           allSymbols.push(...symbols);
+          
+          for (const sym of symbols) {
+            // canonical Veyn symbol id
+            trackedSymbols.add(`${sym.filePath}:${sym.name}`);
+          }
           
           const imports = dependencyExtractor.extract(ast);
           extractedImportCount += imports.length;
@@ -48,6 +57,17 @@ export function registerIndexCommand(program: Command) {
 
           const chunks = chunker.chunk(ast, { repositoryRoot: absoluteRepoPath });
           allChunks.push(...chunks);
+        }
+
+        let extractedReferenceCount = 0;
+        // Second pass for references, since we need the complete Set of tracked symbols
+        for (const ast of asts) {
+          const refs = referenceExtractor.extract(ast, { 
+            repositoryRoot: absoluteRepoPath,
+            trackedSymbols 
+          });
+          extractedReferenceCount += refs.length;
+          allReferences.push(...refs);
         }
 
         const dependencyGraph = buildDependencyGraph(result.files, allImports, { repositoryRoot: absoluteRepoPath });
@@ -63,6 +83,7 @@ export function registerIndexCommand(program: Command) {
         console.log(`Extracted ${extractedImportCount} imports.`);
         console.log(`Built dependency graph: ${depSnapshot.nodes.length} nodes, ${depSnapshot.edges.length} edges.`);
         console.log(`Built call graph: ${callSnapshot.nodes.length} nodes, ${callSnapshot.edges.length} edges.`);
+        console.log(`Extracted ${extractedReferenceCount} references.`);
         console.log(`Prepared ${allChunks.length} deterministic code chunks.`);
 
         let embeddings: EmbeddingResult[] = [];
@@ -94,6 +115,7 @@ export function registerIndexCommand(program: Command) {
           await storage.saveDependencies(identity.id, allImports);
           await storage.saveDependencyGraph(identity.id, depSnapshot.nodes, depSnapshot.edges);
           await storage.saveCallGraph(identity.id, callSnapshot.nodes, callSnapshot.edges);
+          await storage.saveReferences(identity.id, allReferences);
           await storage.saveChunks(identity.id, allChunks);
           await storage.saveEmbeddings(identity.id, embeddings);
 
@@ -109,6 +131,7 @@ export function registerIndexCommand(program: Command) {
             dependencyEdgeCount: depSnapshot.edges.length,
             callNodeCount: callSnapshot.nodes.length,
             callEdgeCount: callSnapshot.edges.length,
+            referenceCount: allReferences.length,
             chunkCount: allChunks.length,
             embeddingCount: embeddings.length,
             indexDurationMs: endTime - startTime

@@ -73,6 +73,9 @@ export class MongoIndexStorage implements IndexStorage {
   public async removeStaleFacts(repositoryId: string, filePaths: string[]): Promise<void> {
     if (filePaths.length === 0) return;
     const db = this.getDb();
+    // First, find the chunks to be deleted so we can delete their embeddings
+    const chunksToDelete = await db.collection("chunks").find({ repositoryId, filePath: { $in: filePaths } }).toArray();
+    const chunkIds = chunksToDelete.map(c => c.id);
     
     // Most collections use 'filePath' or 'relativePath' or 'sourceFile'
     await db.collection("files").deleteMany({ repositoryId, relativePath: { $in: filePaths } });
@@ -80,27 +83,21 @@ export class MongoIndexStorage implements IndexStorage {
     await db.collection("dependencies").deleteMany({ repositoryId, sourceFile: { $in: filePaths } });
     await db.collection("chunks").deleteMany({ repositoryId, filePath: { $in: filePaths } });
     
-    // Embeddings don't have filePath directly, but chunkId starts with a hash. Actually we might need to delete embeddings 
-    // by joining chunks, but for deterministic reindexing, we can just delete embeddings where chunkId is known, or 
-    // we can skip deleting embeddings if we don't have them easily mapped. 
-    // Wait, let's delete chunks first? If we need to delete embeddings, maybe add filePath to embeddings?
-    // The prompt says: "removeEmbeddings(repositoryId, filePaths)".
-    // Let's add filePath to EmbeddingResult or just ignore it for the moment if we can't easily query it, but MongoDB allows $in.
-    // Wait, embeddings only have `chunkId`. The `chunkId` is a hash. We'd have to find the chunks first, get their IDs, then delete the embeddings.
-    const chunksToDelete = await db.collection("chunks").find({ repositoryId, filePath: { $in: filePaths } }).toArray();
-    const chunkIds = chunksToDelete.map(c => c.id);
     if (chunkIds.length > 0) {
       await db.collection("embeddings").deleteMany({ repositoryId, chunkId: { $in: chunkIds } });
     }
     
     await db.collection("dependency_graph_nodes").deleteMany({ repositoryId, filePath: { $in: filePaths } });
     // For edges, if source starts with filePath:, it belongs to the file
-    // A regex is simple, but we can also just rely on the fact that edge source is built from filePath
-    // Since we don't have a direct filePath on edge, we can delete edges where source prefix matches
     const edgeConditions = filePaths.map(fp => ({ source: { $regex: `^${fp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:` } }));
     if (edgeConditions.length > 0) {
       await db.collection("dependency_graph_edges").deleteMany({ repositoryId, $or: edgeConditions });
-      await db.collection("call_graph_edges").deleteMany({ repositoryId, $or: edgeConditions });
+    }
+
+    // CallGraphEdge uses sourceId instead of source
+    const callEdgeConditions = filePaths.map(fp => ({ sourceId: { $regex: `^${fp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:` } }));
+    if (callEdgeConditions.length > 0) {
+      await db.collection("call_graph_edges").deleteMany({ repositoryId, $or: callEdgeConditions });
     }
     await db.collection("call_graph_nodes").deleteMany({ repositoryId, filePath: { $in: filePaths } });
   }
@@ -156,6 +153,21 @@ export class MongoIndexStorage implements IndexStorage {
     if (chunkIds.length === 0) return [];
     const db = this.getDb();
     const chunks = await db.collection("chunks").find({ repositoryId, id: { $in: chunkIds } }).toArray();
+    return chunks.map(c => ({
+      id: c.id,
+      filePath: c.filePath,
+      startLine: c.startLine,
+      endLine: c.endLine,
+      content: c.content,
+      symbolName: c.symbolName,
+      symbolKind: c.symbolKind
+    }));
+  }
+
+  public async getChunksByFilePaths(repositoryId: string, paths: string[]): Promise<CodeChunk[]> {
+    if (paths.length === 0) return [];
+    const db = this.getDb();
+    const chunks = await db.collection("chunks").find({ repositoryId, filePath: { $in: paths } }).toArray();
     return chunks.map(c => ({
       id: c.id,
       filePath: c.filePath,

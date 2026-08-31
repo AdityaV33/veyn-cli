@@ -16,6 +16,7 @@ export interface SearchResult {
   lexicalScore: number;
   graphScore: number;
   finalScore: number;
+  exactMatch: boolean;
 }
 
 export interface SearchResponse {

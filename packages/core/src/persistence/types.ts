@@ -50,6 +50,7 @@ export interface IndexStorage {
   vectorSearch(repositoryId: string, embedding: number[], limit: number): Promise<{ chunkId: string, score: number }[]>;
   searchLexicalChunks(repositoryId: string, terms: string[], limit: number): Promise<CodeChunk[]>;
   getChunksByIds(repositoryId: string, chunkIds: string[]): Promise<CodeChunk[]>;
+  getChunksByFilePaths(repositoryId: string, paths: string[]): Promise<CodeChunk[]>;
 
   // Storage operations
   saveMetadata(metadata: IndexMetadata): Promise<void>;

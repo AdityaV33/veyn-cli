@@ -8,9 +8,17 @@ export const searchCodeTool: VeynTool<{ query: string }> = {
   execute: async (args, context) => {
     const terms = args.query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
     if (terms.length === 0) return [];
-    return await context.storage.searchLexicalChunks(context.repositoryId, terms, 10);
+    const results = await context.storage.searchLexicalChunks(context.repositoryId, terms, 5);
+    // Truncate chunk content to keep evidence within token budget
+    return results.map((chunk: any) => ({
+      ...chunk,
+      content: chunk.content && chunk.content.length > 500
+        ? chunk.content.slice(0, 500) + "\n// ... [truncated]"
+        : chunk.content
+    }));
   }
 };
+
 
 export const findReferencesTool: VeynTool<{ targetId: string }> = {
   name: "find_references",

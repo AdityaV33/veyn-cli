@@ -1,5 +1,5 @@
 import { InvestigationState, ReflectionResult } from "../state.js";
-import { LLMAdapter } from "../llm/index.js";
+import { LLMAdapter, extractJSON, truncateEvidence } from "../llm/index.js";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import { z } from "zod";
 
@@ -55,24 +55,25 @@ export function createReflectionNode(llm: LLMAdapter, limits: ReflectionSafetyLi
     }
 
     // 2. Perform evidence-based LLM reflection
-    const systemPrompt = `You are the Reflection node in an AI code investigation agent.
-Your objective is to evaluate the evidence collected so far and determine if the investigation has gathered enough information to fully satisfy the original question and the current tasks.
-If there is sufficient evidence, or if it's clear the information cannot be found, you should STOP.
-If more investigation is required to answer the question, CONTINUE.
+    const systemPrompt = `You are the Reflection node for an AI code investigation agent.
+Your job is to decide whether the collected evidence is sufficient to definitively answer the user's question.
 
-Provide a concise, operational reason for your decision. Do NOT include internal chain-of-thought.
+IMPORTANT: If the batch of evidence collected so far is sufficient to answer the question, you MUST output STOP, even if there are unfinished tasks remaining. Do not make another investigation round merely because there are technically unfinished tasks.
+If the evidence is not sufficient, output CONTINUE and provide a reason.
 
-Output ONLY a JSON object matching this schema:
+You must output ONLY a JSON object matching this schema:
 {
   "decision": "CONTINUE" | "STOP",
   "reason": "string"
 }`;
 
+    const budgetedEvidence = truncateEvidence(state.evidence);
+
     const userPrompt = `Question: ${state.question}
 Tasks: ${JSON.stringify(state.tasks)}
 Current Task ID: ${state.currentTask}
 Evidence collected:
-${state.evidence.join("\n---\n")}
+${budgetedEvidence.join("\n---\n")}
 `;
 
     // If there's no evidence at all, and there are pending tasks, normally we'd CONTINUE. 
@@ -84,7 +85,7 @@ ${state.evidence.join("\n---\n")}
     ]);
 
     try {
-      const cleanResponse = response.replace(/^```json\s*/, "").replace(/```\s*$/, "").trim();
+      const cleanResponse = extractJSON(response);
       const parsed = JSON.parse(cleanResponse);
       const validated = reflectionSchema.parse(parsed);
 

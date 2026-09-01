@@ -10,17 +10,40 @@ import {
   ReflectionSafetyLimits
 } from "./nodes/index.js";
 
+export interface AgentLLMs {
+  planner: LLMAdapter;
+  investigator: LLMAdapter;
+  reflection: LLMAdapter;
+  reporter: LLMAdapter;
+}
+
+export interface InvestigationPolicy {
+  maxInvestigationRounds: number;
+  deadlineMs: number;
+  maxLlmCalls: number;
+}
+
+export const FAST_SLA_POLICY: InvestigationPolicy = {
+  maxInvestigationRounds: 1,
+  deadlineMs: 25000,
+  maxLlmCalls: 4
+};
+
 export function createInvestigationGraph(
-  llm: LLMAdapter,
+  llms: AgentLLMs,
   registry: ToolRegistry,
   context: ToolContext,
-  reflectionLimits?: ReflectionSafetyLimits
+  policy: InvestigationPolicy = FAST_SLA_POLICY
 ) {
   // 1. Initialize Nodes
-  const planner = createPlannerNode(llm);
-  const investigator = createInvestigatorNode(llm, registry, context);
-  const reflection = createReflectionNode(llm, reflectionLimits);
-  const reporter = createReporterNode(llm);
+  const planner = createPlannerNode(llms.planner);
+  const investigator = createInvestigatorNode(llms.investigator, registry, context);
+  const reflectionLimits: ReflectionSafetyLimits = {
+    maxToolCalls: 15,
+    maxRepeatedCalls: 2
+  };
+  const reflection = createReflectionNode(llms.reflection, reflectionLimits);
+  const reporter = createReporterNode(llms.reporter);
 
   // 2. Define the Graph
   const graphBuilder = new StateGraph(AgentStateAnnotation)
@@ -29,14 +52,31 @@ export function createInvestigationGraph(
     .addNode("reflectionNode", reflection)
     .addNode("reporter", reporter);
 
-  // 3. Define the routing function
+  // 3. Define the routing functions
+  const routeAfterPlanner = (state: InvestigationState) => {
+    if (state.error || !state.tasks || state.tasks.length === 0) {
+      return "reporter";
+    }
+    return "investigator";
+  };
+
   const routeAfterReflection = (state: InvestigationState) => {
     if (state.error) {
-      // If there's an unrecoverable error, we still want the reporter to summarize
-      // what happened, or we can just end. For now, route to reporter to show the error.
       return "reporter";
     }
     
+    // Enforcement of the wall-clock deadline
+    if (Date.now() - state.startTime > policy.deadlineMs) {
+      console.warn(`⚠️ Investigation reached ${policy.deadlineMs}ms deadline. Forcing STOP.`);
+      return "reporter";
+    }
+
+    // Enforcement of investigation rounds (fast SLA policy)
+    if (state.investigationRounds >= policy.maxInvestigationRounds) {
+      console.warn(`⚠️ Maximum investigation rounds (${policy.maxInvestigationRounds}) reached. Forcing STOP.`);
+      return "reporter";
+    }
+
     if (state.reflection?.decision === "CONTINUE") {
       return "investigator";
     }
@@ -47,7 +87,10 @@ export function createInvestigationGraph(
   // 4. Wire the edges
   graphBuilder
     .addEdge(START, "planner")
-    .addEdge("planner", "investigator")
+    .addConditionalEdges("planner", routeAfterPlanner, {
+      investigator: "investigator",
+      reporter: "reporter"
+    })
     .addEdge("investigator", "reflectionNode")
     .addConditionalEdges("reflectionNode", routeAfterReflection, {
       investigator: "investigator",

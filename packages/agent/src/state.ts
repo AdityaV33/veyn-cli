@@ -66,6 +66,16 @@ export const AgentStateAnnotation = Annotation.Root({
     reducer: (x, y) => y !== undefined ? y : x,
     default: () => null,
   }),
+  // Timestamp when investigation started
+  startTime: Annotation<number>({
+    reducer: (x, y) => y ?? x,
+    default: () => Date.now(),
+  }),
+  // Number of times Investigator node ran
+  investigationRounds: Annotation<number>({
+    reducer: (x, y) => x + y,
+    default: () => 0,
+  })
 });
 
 export type InvestigationState = typeof AgentStateAnnotation.State;

@@ -1,5 +1,5 @@
 import { InvestigationState, InvestigationTask } from "../state.js";
-import { LLMAdapter } from "../llm/index.js";
+import { LLMAdapter, extractJSON } from "../llm/index.js";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import { z } from "zod";
 
@@ -18,10 +18,21 @@ export function createPlannerNode(llm: LLMAdapter) {
     }
 
     const systemPrompt = `You are the Planner for an AI code investigation agent.
-Your job is to analyze the user's question and break it down into a structured list of investigation tasks.
-The agent has tools to search code, trace functions, find dependencies, etc.
+Your job is to analyze the user's question and break it down into a highly targeted list of 2-3 investigation tasks.
+Do NOT output a granular checklist. Prioritize evidence that directly answers the question.
+
+The agent has the following tools available:
+- search_code: Search for code snippets matching a lexical query
+- find_references: Find exact references to a symbol by its canonical targetId (e.g. filePath:symbolName)
+- trace_function: Get functions that call this function, or functions called by it
+- find_dependencies: Find file-level dependencies (imports/exports)
+- get_symbol_context: Get the metadata and chunk content for a specific symbol
+- get_architecture: Get high level file/module counts and graph metrics
+- get_health: Get index health metadata
+
+You MUST produce at least one task, but aim for no more than 3 high-value independent tasks.
 Output ONLY a JSON array of tasks. Do not include markdown code blocks or conversational text.
-Each task must have an 'id', a 'description', and a 'status' (which should initially be 'pending').`;
+Each task must have an 'id' (MUST be a string, e.g. "task-1"), a 'description', and a 'status' (which should initially be 'pending').`;
 
     const userPrompt = `Question: ${state.question}`;
 
@@ -31,8 +42,7 @@ Each task must have an 'id', a 'description', and a 'status' (which should initi
     ]);
 
     try {
-      // Remove any potential markdown formatting the LLM might have included despite instructions
-      const cleanResponse = response.replace(/^```json\s*/, "").replace(/```\s*$/, "").trim();
+      const cleanResponse = extractJSON(response);
       
       const parsed = JSON.parse(cleanResponse);
       const validatedTasks = plannerOutputSchema.parse(parsed);

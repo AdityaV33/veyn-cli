@@ -237,6 +237,12 @@ importers:
 
   packages/cli:
     dependencies:
+      '@langchain/core':
+        specifier: ^0.3.80
+        version: 0.3.80
+      '@veyn/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@veyn/core':
         specifier: workspace:*
         version: link:../core

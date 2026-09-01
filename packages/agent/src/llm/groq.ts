@@ -6,8 +6,8 @@ export class GroqAdapter implements LLMAdapter {
   private client: Groq;
   private model: string;
 
-  constructor(apiKey: string | undefined, model: string = "llama-3.1-70b-versatile") {
-    this.client = new Groq({ apiKey });
+  constructor(apiKey: string | undefined, model: string = "openai/gpt-oss-20b", maxRetries: number = 2) {
+    this.client = new Groq({ apiKey, maxRetries });
     this.model = model;
   }
 
@@ -25,10 +25,16 @@ export class GroqAdapter implements LLMAdapter {
        };
     });
 
-    const completion = await this.client.chat.completions.create({
-      messages: formattedMessages as any,
+    const options: any = {
+      messages: formattedMessages,
       model: this.model,
-    });
+    };
+    
+    if (this.model.includes("qwen") || this.model.includes("gpt-oss")) {
+      options.reasoning_format = "hidden";
+    }
+
+    const completion = await this.client.chat.completions.create(options);
 
     return completion.choices[0]?.message?.content || "";
   }

@@ -12,6 +12,7 @@
     "@langchain/core": "^0.3.80",
     "@veyn/agent": "workspace:*",
     "@veyn/core": "workspace:*",
+    "@veyn/server": "workspace:*",
     "commander": "^15.0.0"
   },
   "bin": {

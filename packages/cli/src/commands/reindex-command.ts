@@ -4,7 +4,7 @@ import {
   DependencyExtractor, buildDependencyGraph, ImportRecord, CallExtractor,
   CallRecord, CallGraph, Chunker, CodeChunk, RepositoryIdentityResolver,
   MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, EmbeddingResult,
-  SymbolRecord, ChangeDetector, AffectedResolver, ReferenceExtractor, ReferenceRecord
+  SymbolRecord, ChangeDetector, AffectedResolver, ReferenceExtractor, ReferenceRecord, Indexer
 } from "@veyn/core";
 import path from "path";
 
@@ -37,7 +37,7 @@ export function registerReindexCommand(program: Command) {
           }
 
           const provider = new LocalEmbeddingProvider();
-          const indexer = new (require("@veyn/core").Indexer)(storage, provider);
+          const indexer = new Indexer(storage, provider);
 
           console.log(`\nIncrementally reindexing Repository: ${identity.name}`);
           

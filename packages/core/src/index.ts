@@ -10,4 +10,5 @@ export * from "./incremental/index.js";
 export * from "./search/index.js";
 export * from "./health/index.js";
 export * from "./stats/index.js";
+export * from "./indexing/index.js";
 export const core = "core";

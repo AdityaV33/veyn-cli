@@ -9,6 +9,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@veyn/core": "workspace:*"
+    "@veyn/agent": "workspace:*",
+    "@veyn/core": "workspace:*",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6"
   }
 }

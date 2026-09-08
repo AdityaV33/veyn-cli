@@ -1,0 +1,41 @@
+import { BaseMessage } from "@langchain/core/messages";
+import Groq from "groq-sdk";
+import { LLMAdapter } from "./index.js";
+
+export class GroqAdapter implements LLMAdapter {
+  private client: Groq;
+  private model: string;
+
+  constructor(apiKey: string | undefined, model: string = "openai/gpt-oss-20b", maxRetries: number = 2) {
+    this.client = new Groq({ apiKey, maxRetries });
+    this.model = model;
+  }
+
+  public async invoke(messages: BaseMessage[]): Promise<string> {
+    const formattedMessages = messages.map(m => {
+       const type = m._getType();
+       let role: "user" | "assistant" | "system" | "tool" = "user";
+       if (type === "ai") role = "assistant";
+       else if (type === "system") role = "system";
+       else if (type === "tool") role = "tool";
+       
+       return {
+          role,
+          content: typeof m.content === "string" ? m.content : JSON.stringify(m.content)
+       };
+    });
+
+    const options: any = {
+      messages: formattedMessages,
+      model: this.model,
+    };
+    
+    if (this.model.includes("qwen") || this.model.includes("gpt-oss")) {
+      options.reasoning_format = "hidden";
+    }
+
+    const completion = await this.client.chat.completions.create(options);
+
+    return completion.choices[0]?.message?.content || "";
+  }
+}

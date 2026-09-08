@@ -1,5 +1,5 @@
 import { ScannedFile } from "../scanner/index.js";
-import { SymbolRecord } from "../symbols/index.js";
+import { SymbolRecord, ReferenceRecord } from "../symbols/index.js";
 import { ImportRecord } from "../dependencies/index.js";
 import { GraphNode, GraphEdge } from "../graph/index.js";
 import { CallGraphNode, CallGraphEdge } from "../calls/index.js";
@@ -21,6 +21,7 @@ export interface IndexMetadata {
   dependencyEdgeCount: number;
   callNodeCount: number;
   callEdgeCount: number;
+  referenceCount?: number;
   chunkCount: number;
   embeddingCount: number;
   indexDurationMs?: number;
@@ -43,6 +44,7 @@ export interface IndexStorage {
   getDependencyEdges(repositoryId: string): Promise<GraphEdge[]>;
   getCallNodes(repositoryId: string): Promise<CallGraphNode[]>;
   getCallEdges(repositoryId: string): Promise<CallGraphEdge[]>;
+  getReferences(repositoryId: string, targetId: string): Promise<ReferenceRecord[]>;
   getMetadata(repositoryId: string): Promise<IndexMetadata | null>;
   recalculateMetadata(repositoryId: string): Promise<IndexMetadata>;
 
@@ -59,6 +61,7 @@ export interface IndexStorage {
   saveDependencies(repositoryId: string, dependencies: ImportRecord[]): Promise<void>;
   saveDependencyGraph(repositoryId: string, nodes: GraphNode[], edges: GraphEdge[]): Promise<void>;
   saveCallGraph(repositoryId: string, nodes: CallGraphNode[], edges: CallGraphEdge[]): Promise<void>;
+  saveReferences(repositoryId: string, references: ReferenceRecord[]): Promise<void>;
   saveChunks(repositoryId: string, chunks: CodeChunk[]): Promise<void>;
   saveEmbeddings(repositoryId: string, embeddings: EmbeddingResult[]): Promise<void>;
 }

@@ -2,10 +2,10 @@ import { Command } from "commander";
 import {
   RepositoryIdentityResolver,
   MongoIndexStorage,
-  DependencyGraph,
   DependencyGraphTraversal,
   PersistenceError,
-  ArchitecturePathNode
+  ArchitecturePathNode,
+  loadDependencyGraph
 } from "@veyn/core";
 
 export function registerArchitectureCommand(program: Command) {
@@ -31,14 +31,7 @@ export function registerArchitectureCommand(program: Command) {
         await storage.connect();
 
         try {
-          const nodes = await storage.getDependencyNodes(identity.id);
-          const edges = await storage.getDependencyEdges(identity.id);
-
-          const graph = new DependencyGraph();
-          nodes.forEach(n => graph.addNode(n));
-          edges.forEach(e => graph.addEdge(e));
-
-          const traversal = new DependencyGraphTraversal(graph);
+          const traversal = await loadDependencyGraph(storage, identity.id);
 
           const targets = traversal.resolveTarget(targetModule);
           if (targets.length === 0) {

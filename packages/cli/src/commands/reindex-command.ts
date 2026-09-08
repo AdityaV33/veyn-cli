@@ -22,7 +22,6 @@ export function registerReindexCommand(program: Command) {
         }
 
         const absoluteRepoPath = path.resolve(repoPath);
-
         const resolver = new RepositoryIdentityResolver();
         const identity = resolver.resolve(absoluteRepoPath);
 
@@ -37,136 +36,27 @@ export function registerReindexCommand(program: Command) {
             process.exit(1);
           }
 
-          // 4. Scan current repository
-          const result = scanRepository(absoluteRepoPath);
+          const provider = new LocalEmbeddingProvider();
+          const indexer = new (require("@veyn/core").Indexer)(storage, provider);
 
-          // 5. Determine added/modified/deleted/unchanged
-          const existingFiles = await storage.getFiles(identity.id);
-          const detector = new ChangeDetector();
-          const changes = detector.detect(existingFiles, result.files);
+          console.log(`\nIncrementally reindexing Repository: ${identity.name}`);
+          
+          const result = await indexer.reindex(
+            absoluteRepoPath,
+            identity.id,
+            identity.name,
+            (msg: string) => console.log(`  ${msg}`)
+          );
 
-          if (changes.added.length === 0 && changes.modified.length === 0 && changes.deleted.length === 0) {
-            console.log("\nNo changes detected.");
-            console.log("Repository index is already up to date.\n");
-            return;
+          if (result) {
+            console.log(`\nReindexed:`);
+            console.log(`  Parsed: ${result.parsedCount}`);
+            console.log(`  Symbols: ${result.extractedSymbolCount}`);
+            console.log(`  Imports: ${result.extractedImportCount}`);
+            console.log(`  References: ${result.extractedReferenceCount}`);
+            console.log(`  Chunks: ${result.chunkCount}`);
+            console.log(`\nIndex updated successfully.\n`);
           }
-
-          // 6. Determine affected files
-          const existingEdges = await storage.getDependencyEdges(identity.id);
-          const existingCallEdges = await storage.getCallEdges(identity.id);
-          const affectedResolver = new AffectedResolver();
-          const affectedFiles = affectedResolver.resolve(changes, existingEdges, existingCallEdges);
-
-          console.log(`\nRepository: ${identity.name}`);
-          console.log(`\nChanges detected:`);
-          console.log(`  Added: ${changes.added.length}`);
-          console.log(`  Modified: ${changes.modified.length}`);
-          console.log(`  Deleted: ${changes.deleted.length}`);
-          console.log(`  Unchanged: ${changes.unchanged.length}`);
-          console.log(`\nAffected files: ${affectedFiles.length}\n`);
-
-          // Remove deleted files from affected list for parsing (we can't parse deleted files)
-          const filesToParse = affectedFiles.filter(f => !changes.deleted.includes(f));
-          const scannedFilesToParse = result.files.filter(f => filesToParse.includes(f.relativePath));
-
-          // 7. Re-run analysis for affected scope
-          const parser = new VeynParser(absoluteRepoPath);
-          const symbolExtractor = new SymbolExtractor();
-          const dependencyExtractor = new DependencyExtractor();
-          const callExtractor = new CallExtractor();
-          const referenceExtractor = new ReferenceExtractor();
-          const chunker = new Chunker();
-
-          let parsedCount = 0;
-          let extractedSymbolCount = 0;
-          let extractedImportCount = 0;
-          const allSymbols: SymbolRecord[] = [];
-          const allImports: ImportRecord[] = [];
-          const allCalls: CallRecord[] = [];
-          const allReferences: ReferenceRecord[] = [];
-          const allChunks: CodeChunk[] = [];
-
-          const asts = scannedFilesToParse.map(file => {
-            const absoluteFilePath = path.join(result.repositoryPath, file.relativePath);
-            return parser.parseFile(absoluteFilePath);
-          });
-
-          for (const ast of asts) {
-            parsedCount++;
-
-            const symbols = symbolExtractor.extract(ast);
-            extractedSymbolCount += symbols.length;
-            allSymbols.push(...symbols);
-
-            const imports = dependencyExtractor.extract(ast);
-            extractedImportCount += imports.length;
-            allImports.push(...imports);
-
-            const calls = callExtractor.extract(ast);
-            allCalls.push(...calls);
-
-            const chunks = chunker.chunk(ast, { repositoryRoot: absoluteRepoPath });
-            allChunks.push(...chunks);
-          }
-
-          const existingSymbols = await storage.getSymbols(identity.id);
-          const trackedSymbols = new Set<string>();
-          for (const s of existingSymbols) {
-             if (!affectedFiles.includes(s.filePath)) {
-                 trackedSymbols.add(`${s.filePath}:${s.name}`);
-             }
-          }
-          for (const sym of allSymbols) {
-             trackedSymbols.add(`${sym.filePath}:${sym.name}`);
-          }
-
-          let extractedReferenceCount = 0;
-          for (const ast of asts) {
-            const refs = referenceExtractor.extract(ast, { 
-              repositoryRoot: absoluteRepoPath,
-              trackedSymbols 
-            });
-            extractedReferenceCount += refs.length;
-            allReferences.push(...refs);
-          }
-
-          const dependencyGraph = buildDependencyGraph(result.files, allImports, { repositoryRoot: absoluteRepoPath });
-          const callGraph = new CallGraph();
-          callGraph.build(allCalls, { repositoryRoot: absoluteRepoPath });
-
-          const depSnapshot = dependencyGraph.toJSON();
-          const callSnapshot = callGraph.toJSON();
-
-          let embeddings: EmbeddingResult[] = [];
-          if (allChunks.length > 0) {
-            const provider = new LocalEmbeddingProvider();
-            embeddings = await provider.embed(allChunks);
-          }
-
-          // 8. Update persistence
-          await storage.removeStaleFacts(identity.id, affectedFiles);
-
-          await storage.saveFiles(identity.id, scannedFilesToParse);
-          await storage.saveSymbols(identity.id, allSymbols);
-          await storage.saveDependencies(identity.id, allImports);
-          await storage.saveDependencyGraph(identity.id, depSnapshot.nodes, depSnapshot.edges);
-          await storage.saveCallGraph(identity.id, callSnapshot.nodes, callSnapshot.edges);
-          await storage.saveReferences(identity.id, allReferences);
-          await storage.saveChunks(identity.id, allChunks);
-          if (embeddings.length > 0) {
-            await storage.saveEmbeddings(identity.id, embeddings);
-          }
-
-          await storage.recalculateMetadata(identity.id);
-
-          console.log(`Reindexed:`);
-          console.log(`  Parsed: ${parsedCount}`);
-          console.log(`  Symbols: ${extractedSymbolCount}`);
-          console.log(`  Imports: ${extractedImportCount}`);
-          console.log(`  Calls: ${allCalls.length}`);
-          console.log(`  References: ${extractedReferenceCount}`);
-          console.log(`  Chunks: ${allChunks.length}`);
-          console.log(`\nIndex updated successfully.`);
 
         } finally {
           await storage.disconnect();
@@ -183,8 +73,7 @@ export function registerReindexCommand(program: Command) {
           console.error(`Persistence Error: ${error.message}`);
           process.exit(1);
         }
-
         throw error;
       }
-    });
+});
 }

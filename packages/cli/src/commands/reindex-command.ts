@@ -7,6 +7,7 @@ import {
   SymbolRecord, ChangeDetector, AffectedResolver, ReferenceExtractor, ReferenceRecord, Indexer
 } from "@veyn/core";
 import path from "path";
+import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerReindexCommand(program: Command) {
   program
@@ -15,9 +16,9 @@ export function registerReindexCommand(program: Command) {
     .action(async (repoPath: string) => {
       try {
         if (!process.env.MONGODB_URI) {
-          console.error("\nPersistence Error: MONGODB_URI environment variable is missing.");
-          console.error("Incremental reindexing requires a configured MongoDB connection.");
-          console.error("Please configure MONGODB_URI and try again.\n");
+          Presenter.error("Persistence Error: MONGODB_URI environment variable is missing.");
+          Presenter.text("Incremental reindexing requires a configured MongoDB connection.");
+          Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
         }
 
@@ -31,31 +32,41 @@ export function registerReindexCommand(program: Command) {
         try {
           const existingMeta = await storage.getMetadata(identity.id);
           if (!existingMeta) {
-            console.error(`\nError: Repository ${identity.name} (${identity.id}) is not indexed.`);
-            console.error(`Please run 'veyn index <path>' first.\n`);
+            Presenter.error(`Repository ${identity.name} (${identity.id}) is not indexed.`);
+            Presenter.text(`Please run 'veyn index <path>' first.`);
             process.exit(1);
           }
 
           const provider = new LocalEmbeddingProvider();
           const indexer = new Indexer(storage, provider);
 
-          console.log(`\nIncrementally reindexing Repository: ${identity.name}`);
-          
+          Presenter.title("Updating Index");
+          Presenter.item("Repository", identity.name);
+          Presenter.section("Index status");
+
           const result = await indexer.reindex(
             absoluteRepoPath,
             identity.id,
             identity.name,
-            (msg: string) => console.log(`  ${msg}`)
+            (msg: string) => Presenter.step(msg)
           );
+          Presenter.endStep();
 
           if (result) {
-            console.log(`\nReindexed:`);
-            console.log(`  Parsed: ${result.parsedCount}`);
-            console.log(`  Symbols: ${result.extractedSymbolCount}`);
-            console.log(`  Imports: ${result.extractedImportCount}`);
-            console.log(`  References: ${result.extractedReferenceCount}`);
-            console.log(`  Chunks: ${result.chunkCount}`);
-            console.log(`\nIndex updated successfully.\n`);
+            Presenter.success("Index updated successfully");
+
+            Presenter.section("Repository understanding");
+            Presenter.text(`${colors.bold}${result.parsedCount}${colors.reset} files modified`);
+            Presenter.text(`${colors.bold}${result.extractedSymbolCount}${colors.reset} code elements updated`);
+            Presenter.text(`${colors.bold}${result.chunkCount}${colors.reset} searchable representations updated`);
+
+            Presenter.section("Last indexing run");
+            Presenter.text(`Duration: ${Presenter.formatDuration(result.durationMs)}`);
+            console.log("");
+          } else {
+            Presenter.success("Index is already up to date");
+            Presenter.text("No files added, modified, or deleted since the last index.");
+            console.log("");
           }
 
         } finally {
@@ -64,16 +75,16 @@ export function registerReindexCommand(program: Command) {
 
       } catch (error: any) {
         if (error instanceof ScannerError) {
-          console.error(`Scanner Error: ${error.message}`);
+          Presenter.error(`Scanner Error: ${error.message}`);
           process.exit(1);
         } else if (error instanceof ParserError) {
-          console.error(`Parser Error: ${error.message}`);
+          Presenter.error(`Parser Error: ${error.message}`);
           process.exit(1);
         } else if (error instanceof PersistenceError) {
-          console.error(`Persistence Error: ${error.message}`);
+          Presenter.error(`Persistence Error: ${error.message}`);
           process.exit(1);
         }
         throw error;
       }
-});
+    });
 }

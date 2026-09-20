@@ -7,6 +7,7 @@ import {
   ArchitecturePathNode,
   loadDependencyGraph
 } from "@veyn/core";
+import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerArchitectureCommand(program: Command) {
   program
@@ -16,9 +17,9 @@ export function registerArchitectureCommand(program: Command) {
     .action(async (targetModule: string, options: { depth: string }) => {
       try {
         if (!process.env.MONGODB_URI) {
-          console.error("\\nConfiguration Error: MONGODB_URI environment variable is missing.");
-          console.error("Veyn architecture requires a configured MongoDB connection for the index.");
-          console.error("Please configure MONGODB_URI and try again.\\n");
+          Presenter.error("Configuration Error: MONGODB_URI environment variable is missing.");
+          Presenter.text("Veyn architecture requires a configured MongoDB connection for the index.");
+          Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
         }
 
@@ -35,50 +36,63 @@ export function registerArchitectureCommand(program: Command) {
 
           const targets = traversal.resolveTarget(targetModule);
           if (targets.length === 0) {
-            console.error(`\\nError: Could not resolve target module '${targetModule}' in the repository.\\n`);
+            Presenter.error(`Could not resolve target module '${targetModule}' in the repository.`);
             process.exit(1);
           }
 
           if (targets.length > 1) {
-            console.error(`\\nError: Ambiguous target module '${targetModule}'. Multiple occurrences found:\\n`);
-            targets.forEach(t => console.error(`  - ${t.id}`));
-            console.error("\\nPlease specify the exact ID using the format 'filepath'.\\n");
+            Presenter.error(`Ambiguous target module '${targetModule}'. Multiple occurrences found:`);
+            targets.forEach(t => Presenter.item("-", t.id));
+            Presenter.text("Please specify the exact ID using the format 'filepath'.");
             process.exit(1);
           }
 
           const targetId = targets[0].id;
           const maxDepth = parseInt(options.depth, 10);
 
-          console.log(`\\nAnalyzing architecture for: ${targetId} (max depth: ${maxDepth})\\n`);
+          Presenter.title("Architecture Map");
+          Presenter.item("Target", targetId);
+          Presenter.item("Max Depth", maxDepth);
+
+          Presenter.section("Status");
+          Presenter.step("Analyzing module dependencies...");
 
           const result = traversal.analyze(targetId, { maxDepth });
+          Presenter.endStep();
+          Presenter.success("Analysis complete");
 
           const printPath = (pathNodes: ArchitecturePathNode[], isDependents: boolean) => {
             pathNodes.forEach((p, idx) => {
-              const indent = "  ".repeat(idx);
+              const indent = "  ".repeat(idx + 1);
               if (idx === 0) {
-                console.log(`${indent}${p.node.id}`);
+                console.log(`${indent}${colors.cyan}${p.node.id}${colors.reset}`);
               } else {
                 const arrow = isDependents ? "<- imported by <-" : "-> imports ->";
-                console.log(`${indent}${arrow} ${p.node.id}`);
+                console.log(`${indent}${colors.dim}${arrow}${colors.reset} ${p.node.id}`);
               }
             });
             console.log("");
           };
 
+          Presenter.section("Dependents (What imports this module)");
           if (result.dependents.length > 0) {
-            console.log("DEPENDENTS (What imports this module):\\n");
             result.dependents.forEach(p => printPath(p, true));
           } else {
-            console.log("DEPENDENTS (What imports this module): None found\\n");
+            Presenter.dimText("No dependents found");
+            console.log("");
           }
 
+          Presenter.section("Dependencies (What this module imports)");
           if (result.dependencies.length > 0) {
-            console.log("DEPENDENCIES (What this module imports):\\n");
             result.dependencies.forEach(p => printPath(p, false));
           } else {
-            console.log("DEPENDENCIES (What this module imports): None found\\n");
+            Presenter.dimText("No dependencies found");
+            console.log("");
           }
+
+          Presenter.section("Why it matters");
+          Presenter.text(`Modifying ${targetModule} may break ${result.dependents.length} importing modules.`);
+          console.log("");
 
         } finally {
           await storage.disconnect();
@@ -86,11 +100,11 @@ export function registerArchitectureCommand(program: Command) {
 
       } catch (error: any) {
         if (error instanceof PersistenceError) {
-          console.error(`\\nArchitecture Error: ${error.message}\\n`);
+          Presenter.error(`Architecture Error: ${error.message}`);
           process.exit(1);
         }
 
-        console.error(`\\nUnexpected Error: ${error.message}\\n`);
+        Presenter.error(`Unexpected Error: ${error.message}`);
         process.exit(1);
       }
     });

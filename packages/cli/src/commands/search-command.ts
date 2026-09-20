@@ -7,6 +7,7 @@ import {
   PersistenceError
 } from "@veyn/core";
 import path from "path";
+import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerSearchCommand(program: Command) {
   program
@@ -15,14 +16,11 @@ export function registerSearchCommand(program: Command) {
     .action(async (query: string) => {
       try {
         if (!process.env.MONGODB_URI) {
-          console.error("\nConfiguration Error: MONGODB_URI environment variable is missing.");
-          console.error("Veyn search requires a configured MongoDB connection for the index.");
-          console.error("Please configure MONGODB_URI and try again.\n");
+          Presenter.error("Configuration Error: MONGODB_URI environment variable is missing.");
+          Presenter.text("Veyn search requires a configured MongoDB connection for the index.");
+          Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
         }
-
-        // Removed GROQ_API_KEY check as embeddings are now local
-
 
         const absoluteRepoPath = process.cwd();
 
@@ -36,7 +34,11 @@ export function registerSearchCommand(program: Command) {
           const provider = new LocalEmbeddingProvider();
           const engine = new SearchEngine(storage, provider);
 
-          console.log(`\nSearch: ${query}\n`);
+          Presenter.title("Semantic Search");
+          Presenter.item("Query", query);
+
+          Presenter.section("Status");
+          Presenter.step("Searching codebase...");
 
           const response = await engine.search({
             repositoryId: identity.id,
@@ -44,23 +46,37 @@ export function registerSearchCommand(program: Command) {
             text: query,
             limit: 10
           });
+          Presenter.endStep();
 
           if (response.results.length === 0) {
-            console.log("No results found.\n");
+            Presenter.warning("No relevant results found for your query.");
             return;
           }
 
-          console.log("Results:\n");
+          Presenter.success("Search complete");
+
+          Presenter.section("Results found");
+
           response.results.forEach((result, index) => {
-            const sym = result.symbolName ? `   symbol: ${result.symbolName}\n` : "";
-            console.log(`${index + 1}. ${result.filePath}:${result.startLine}-${result.endLine}`);
-            if (sym) {
-              process.stdout.write(sym);
-            }
-            console.log(`   score: ${result.finalScore.toFixed(4)} (sem: ${result.semanticScore.toFixed(2)}, lex: ${result.lexicalScore.toFixed(2)}, grp: ${result.graphScore.toFixed(2)})`);
-            console.log(`\n   ${result.content.split('\\n').slice(0, 5).join('\\n   ')}...`);
-            console.log("\n");
+            const sym = result.symbolName ? ` (Symbol: ${result.symbolName})` : "";
+            Presenter.text(`${colors.bold}${index + 1}. ${result.filePath}:${result.startLine}-${result.endLine}${colors.reset}${sym}`);
+
+            // Format content preview nicely
+            const contentLines = result.content.split('\n');
+            const preview = contentLines.slice(0, 3).join('\n').trim();
+            Presenter.dimText(`${preview}${contentLines.length > 3 ? '...' : ''}`, 2);
+            console.log("");
           });
+
+          Presenter.section("Technical details");
+          Presenter.text(`Found ${response.results.length} matches using hybrid semantic+lexical search (BAAI/bge-small-en-v1.5)`);
+
+          // Show top score details
+          if (response.results.length > 0) {
+            const best = response.results[0];
+            Presenter.text(`Top match score: ${best.finalScore.toFixed(4)} (sem: ${best.semanticScore.toFixed(2)}, lex: ${best.lexicalScore.toFixed(2)}, grp: ${best.graphScore.toFixed(2)})`);
+          }
+          console.log("");
 
         } finally {
           await storage.disconnect();
@@ -68,11 +84,11 @@ export function registerSearchCommand(program: Command) {
 
       } catch (error: any) {
         if (error instanceof PersistenceError) {
-          console.error(`\nSearch Error: ${error.message}\n`);
+          Presenter.error(`Search Error: ${error.message}`);
           process.exit(1);
         }
 
-        console.error(`\nUnexpected Error: ${error.message}\n`);
+        Presenter.error(`Unexpected Error: ${error.message}`);
         process.exit(1);
       }
     });

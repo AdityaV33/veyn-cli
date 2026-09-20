@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { RepositoryIdentityResolver, MongoIndexStorage, PersistenceError, LocalEmbeddingProvider, Indexer, ScannerError, ParserError } from "@veyn/core";
 import path from "path";
+import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerIndexCommand(program: Command) {
   program
@@ -11,9 +12,9 @@ export function registerIndexCommand(program: Command) {
         const absoluteRepoPath = path.resolve(repoPath);
 
         if (!process.env.MONGODB_URI) {
-          console.error("\nPersistence Error: MONGODB_URI environment variable is missing.");
-          console.error("Index was generated in memory but could not be persisted to MongoDB Atlas.");
-          console.error("Please configure MONGODB_URI and try again.\n");
+          Presenter.error("Persistence Error: MONGODB_URI environment variable is missing.");
+          Presenter.text("Index was generated in memory but could not be persisted to MongoDB Atlas.");
+          Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
         }
 
@@ -26,29 +27,52 @@ export function registerIndexCommand(program: Command) {
         try {
           const provider = new LocalEmbeddingProvider();
           const indexer = new Indexer(storage, provider);
-          
-          await indexer.index(absoluteRepoPath, identity.id, identity.name, (msg) => {
-            console.log(msg);
+
+          Presenter.title("Indexing Repository");
+          Presenter.item("Repository", identity.name);
+          Presenter.section("Index status");
+
+          const stats = await indexer.index(absoluteRepoPath, identity.id, identity.name, (msg) => {
+            Presenter.step(msg);
           });
-          
+          Presenter.endStep();
+
+          Presenter.success("Indexing complete");
+
+          Presenter.section("Repository understanding");
+          Presenter.text(`${colors.bold}${stats.fileCount}${colors.reset} files analyzed`);
+          Presenter.text(`${colors.bold}${stats.extractedSymbolCount}${colors.reset} code elements discovered`);
+          Presenter.dimText("Such as functions, classes, types, and variables");
+
+          Presenter.text(`${colors.bold}${stats.dependencyEdgeCount}${colors.reset} file imports mapped`);
+          Presenter.dimText("Dependencies between files");
+
+          Presenter.text(`${colors.bold}${stats.callEdgeCount}${colors.reset} function calls mapped`);
+          Presenter.dimText("Execution paths between functions");
+
+          Presenter.text(`${colors.bold}${stats.embeddingCount}${colors.reset} embeddings generated`);
+          Presenter.dimText("Searchable representations of code sections");
+
+          Presenter.section("Last indexing run");
+          Presenter.text(`Duration: ${Presenter.formatDuration(stats.durationMs)}`);
+          console.log("");
+
         } finally {
           await storage.disconnect();
         }
 
-        console.log(`Index persisted successfully to MongoDB for repository: ${identity.name} (${identity.id})`);
-
       } catch (error: any) {
         if (error instanceof ScannerError) {
-          console.error(`Scanner Error: ${error.message}`);
+          Presenter.error(`Scanner Error: ${error.message}`);
           process.exit(1);
         } else if (error instanceof ParserError) {
-          console.error(`Parser Error: ${error.message}`);
+          Presenter.error(`Parser Error: ${error.message}`);
           process.exit(1);
         } else if (error instanceof PersistenceError) {
-          console.error(`Persistence Error: ${error.message}`);
+          Presenter.error(`Persistence Error: ${error.message}`);
           process.exit(1);
         }
-        
+
         throw error;
       }
     });

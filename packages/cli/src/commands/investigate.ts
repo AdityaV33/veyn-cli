@@ -42,7 +42,7 @@ export function registerInvestigateCommand(program: Command) {
           const context = { storage, repositoryId: identity.id };
 
           const graph = createInvestigationGraph(llms, registry, context);
-          
+
           console.log(`\nInvestigating: "${question}"`);
           console.log(`Repository: ${identity.id}\n`);
 
@@ -60,7 +60,7 @@ export function registerInvestigateCommand(program: Command) {
 
           if (options.stream) {
             const stream = await graph.stream(initialState);
-            
+
             for await (const update of stream) {
               const nodeName = Object.keys(update)[0];
               const state = update[nodeName];
@@ -92,12 +92,12 @@ export function registerInvestigateCommand(program: Command) {
           } else {
             console.log("Running investigation... (this may take a few seconds)\n");
             const finalState = await graph.invoke(initialState);
-            
+
             if (finalState.error) {
               console.error(`\nError: ${finalState.error}\n`);
               process.exit(1);
             }
-            
+
             console.log(`[Final Answer]\n\n${finalState.response}\n`);
           }
 

@@ -22,11 +22,22 @@ export class CallGraphTraversal {
   constructor(private graph: CallGraph) {}
 
   public resolveTarget(query: string, allSymbols: SymbolRecord[]): SymbolRecord[] {
+    let matches: SymbolRecord[] = [];
     if (query.includes(":")) {
       const exact = allSymbols.find(s => `${s.filePath}:${s.name}` === query);
-      return exact ? [exact] : [];
+      if (exact) matches.push(exact);
+    } else {
+      matches = allSymbols.filter(s => s.name === query);
     }
-    return allSymbols.filter(s => s.name === query);
+
+    // Deduplicate by ID
+    const seen = new Set<string>();
+    return matches.filter(s => {
+      const id = `${s.filePath}:${s.name}`;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
   }
 
   public trace(targetSymbol: SymbolRecord, options: TraceOptions = {}): TraceResult {

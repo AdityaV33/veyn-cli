@@ -1,17 +1,19 @@
+const isColorEnabled = () => process.stdout.isTTY && !process.env.NO_COLOR;
+
 export const colors = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  italic: "\x1b[3m",
-  underline: "\x1b[4m",
-  black: "\x1b[30m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  magenta: "\x1b[35m",
-  cyan: "\x1b[36m",
-  white: "\x1b[37m",
+  get reset() { return isColorEnabled() ? "\x1b[0m" : ""; },
+  get bold() { return isColorEnabled() ? "\x1b[1m" : ""; },
+  get dim() { return isColorEnabled() ? "\x1b[2m" : ""; },
+  get italic() { return isColorEnabled() ? "\x1b[3m" : ""; },
+  get underline() { return isColorEnabled() ? "\x1b[4m" : ""; },
+  get black() { return isColorEnabled() ? "\x1b[30m" : ""; },
+  get red() { return isColorEnabled() ? "\x1b[31m" : ""; },
+  get green() { return isColorEnabled() ? "\x1b[32m" : ""; },
+  get yellow() { return isColorEnabled() ? "\x1b[33m" : ""; },
+  get blue() { return isColorEnabled() ? "\x1b[34m" : ""; },
+  get magenta() { return isColorEnabled() ? "\x1b[35m" : ""; },
+  get cyan() { return isColorEnabled() ? "\x1b[36m" : ""; },
+  get white() { return isColorEnabled() ? "\x1b[37m" : ""; },
 };
 
 export class Presenter {

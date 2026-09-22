@@ -11,10 +11,9 @@ import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerArchitectureCommand(program: Command) {
   program
-    .command("architecture <module>")
-    .description("Show architecture and dependencies for a module")
-    .option("-d, --depth <number>", "Maximum depth of the traversal", "5")
-    .action(async (targetModule: string, options: { depth: string }) => {
+    .command("architecture [module]")
+    .description("Show architecture and dependencies for a module or the repository")
+    .action(async (targetModule: string | undefined) => {
       try {
         if (!process.env.MONGODB_URI) {
           Presenter.error("Configuration Error: MONGODB_URI environment variable is missing.");
@@ -34,6 +33,40 @@ export function registerArchitectureCommand(program: Command) {
         try {
           const traversal = await loadDependencyGraph(storage, identity.id);
 
+          Presenter.title("Architecture");
+
+          if (!targetModule) {
+            const result = traversal.analyzeRepository(absoluteRepoPath);
+
+            Presenter.section("Dependency map");
+            if (result.packages.length === 0) {
+              console.log(`  ${colors.dim}No packages found.${colors.reset}`);
+              console.log("");
+            } else {
+              result.packages.forEach(pkg => {
+                console.log(`  ${colors.cyan}${pkg}${colors.reset}`);
+                const deps = result.dependsOn[pkg] || [];
+                if (deps.length === 0) {
+                  console.log(`    ${colors.dim}No internal package dependencies${colors.reset}`);
+                } else {
+                  deps.forEach((dep, idx) => {
+                    const prefix = idx === deps.length - 1 ? "└─ uses →" : "├─ uses →";
+                    console.log(`    ${colors.dim}${prefix}${colors.reset} ${colors.cyan}${dep}${colors.reset}`);
+                  });
+                }
+                console.log("");
+              });
+            }
+            Presenter.section("Summary");
+            const pkgText = result.totals.packages === 1 ? "package" : "packages";
+            const relText = result.totals.relationships === 1 ? "internal dependency relationship" : "internal dependency relationships";
+            console.log(`  ${result.totals.packages} ${pkgText}`);
+            console.log(`  ${result.totals.relationships} ${relText}`);
+            console.log("");
+            console.log("");
+            return;
+          }
+
           const targets = traversal.resolveTarget(targetModule);
           if (targets.length === 0) {
             Presenter.error(`Could not resolve target module '${targetModule}' in the repository.`);
@@ -48,50 +81,49 @@ export function registerArchitectureCommand(program: Command) {
           }
 
           const targetId = targets[0].id;
-          const maxDepth = parseInt(options.depth, 10);
-
-          Presenter.title("Architecture Map");
-          Presenter.item("Target", targetId);
-          Presenter.item("Max Depth", maxDepth);
-
-          Presenter.section("Status");
-          Presenter.step("Analyzing module dependencies...");
+          // Target mode only fetches direct dependencies and direct dependents
+          const maxDepth = 1;
 
           const result = traversal.analyze(targetId, { maxDepth });
-          Presenter.endStep();
-          Presenter.success("Analysis complete");
 
-          const printPath = (pathNodes: ArchitecturePathNode[], isDependents: boolean) => {
-            pathNodes.forEach((p, idx) => {
-              const indent = "  ".repeat(idx + 1);
-              if (idx === 0) {
-                console.log(`${indent}${colors.cyan}${p.node.id}${colors.reset}`);
-              } else {
-                const arrow = isDependents ? "<- imported by <-" : "-> imports ->";
-                console.log(`${indent}${colors.dim}${arrow}${colors.reset} ${p.node.id}`);
+          const extractUnique = (paths: ArchitecturePathNode[][]) => {
+            const set = new Set<string>();
+            for (const path of paths) {
+              for (const node of path) {
+                if (node.node.id !== targetId) {
+                  set.add(node.node.id);
+                }
               }
-            });
-            console.log("");
+            }
+            return Array.from(set).sort();
           };
 
-          Presenter.section("Dependents (What imports this module)");
-          if (result.dependents.length > 0) {
-            result.dependents.forEach(p => printPath(p, true));
+          const uniqueDeps = extractUnique(result.dependencies);
+          const uniqueDependents = extractUnique(result.dependents);
+
+          Presenter.section("Dependency map");
+          console.log(`  ${colors.cyan}${targetId}${colors.reset}`);
+
+          if (uniqueDeps.length === 0 && uniqueDependents.length === 0) {
+            console.log(`    ${colors.dim}No direct dependencies found${colors.reset}`);
+            console.log(`    ${colors.dim}No direct dependents found${colors.reset}`);
           } else {
-            Presenter.dimText("No dependents found");
-            console.log("");
+            const relationships = [
+              ...uniqueDeps.map(dep => ({ prefix: "uses →", module: dep })),
+              ...uniqueDependents.map(dep => ({ prefix: "used by ←", module: dep }))
+            ];
+
+            relationships.forEach((rel, idx) => {
+              const treeChar = idx === relationships.length - 1 ? "└─" : "├─";
+              console.log(`    ${colors.dim}${treeChar} ${rel.prefix}${colors.reset} ${colors.cyan}${rel.module}${colors.reset}`);
+            });
           }
 
-          Presenter.section("Dependencies (What this module imports)");
-          if (result.dependencies.length > 0) {
-            result.dependencies.forEach(p => printPath(p, false));
-          } else {
-            Presenter.dimText("No dependencies found");
-            console.log("");
-          }
-
-          Presenter.section("Why it matters");
-          Presenter.text(`Modifying ${targetModule} may break ${result.dependents.length} importing modules.`);
+          Presenter.section("Summary");
+          const depText = uniqueDeps.length === 1 ? "direct dependency" : "direct dependencies";
+          const dependentText = uniqueDependents.length === 1 ? "direct dependent" : "direct dependents";
+          console.log(`  ${uniqueDeps.length} ${depText}`);
+          console.log(`  ${uniqueDependents.length} ${dependentText}`);
           console.log("");
 
         } finally {

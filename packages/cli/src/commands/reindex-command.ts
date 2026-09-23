@@ -7,6 +7,7 @@ import {
   SymbolRecord, ChangeDetector, AffectedResolver, ReferenceExtractor, ReferenceRecord, Indexer
 } from "@veyn/core";
 import path from "path";
+import fs from "fs";
 import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerReindexCommand(program: Command) {
@@ -23,6 +24,13 @@ export function registerReindexCommand(program: Command) {
         }
 
         const absoluteRepoPath = path.resolve(repoPath);
+
+        if (fs.existsSync(absoluteRepoPath) && !fs.statSync(absoluteRepoPath).isDirectory()) {
+          Presenter.error(`Repository path is not a directory: ${absoluteRepoPath}`);
+          Presenter.section("Next step");
+          Presenter.text("Please provide a path to a repository directory.");
+          process.exit(1);
+        }
         const resolver = new RepositoryIdentityResolver();
         const identity = resolver.resolve(absoluteRepoPath);
 
@@ -72,9 +80,16 @@ export function registerReindexCommand(program: Command) {
             Presenter.success("Index updated successfully");
 
             Presenter.section("Repository understanding");
-            Presenter.text(`${colors.bold}${result.parsedCount}${colors.reset} files modified`);
-            Presenter.text(`${colors.bold}${result.extractedSymbolCount}${colors.reset} code elements updated`);
-            Presenter.text(`${colors.bold}${result.chunkCount}${colors.reset} searchable representations updated`);
+            
+            Presenter.section("Files processed");
+            Presenter.text(`${colors.bold}${result.parsedCount}${colors.reset} file${result.parsedCount === 1 ? '' : 's'} reindexed`);
+
+            if (result.addedCount) Presenter.text(`${colors.bold}${result.addedCount}${colors.reset} file${result.addedCount === 1 ? '' : 's'} added`);
+            if (result.modifiedCount) Presenter.text(`${colors.bold}${result.modifiedCount}${colors.reset} file${result.modifiedCount === 1 ? '' : 's'} modified`);
+            if (result.deletedCount) Presenter.text(`${colors.bold}${result.deletedCount}${colors.reset} file${result.deletedCount === 1 ? '' : 's'} deleted`);
+            
+            Presenter.text(`${colors.bold}${result.extractedSymbolCount}${colors.reset} code element${result.extractedSymbolCount === 1 ? '' : 's'} updated`);
+            Presenter.text(`${colors.bold}${result.chunkCount}${colors.reset} searchable representation${result.chunkCount === 1 ? '' : 's'} updated`);
 
             Presenter.section("Last indexing run");
             Presenter.text(`Duration: ${Presenter.formatDuration(result.durationMs)}`);

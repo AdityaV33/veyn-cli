@@ -39,6 +39,9 @@ export interface IndexResult {
   chunkCount: number;
   embeddingCount: number;
   durationMs: number;
+  addedCount?: number;
+  modifiedCount?: number;
+  deletedCount?: number;
 }
 
 export class Indexer {
@@ -142,7 +145,7 @@ export class Indexer {
       }
 
       if (onProgress) {
-        onProgress(`Parsed ${parsedCount} files successfully.`);
+        onProgress(`Parsed ${parsedCount} file${parsedCount === 1 ? '' : 's'} successfully.`);
         onProgress(`Extracted ${extractedSymbolCount} symbols.`);
         onProgress(`Extracted ${extractedImportCount} imports.`);
       }
@@ -172,7 +175,7 @@ export class Indexer {
       }
 
       if (onProgress) {
-        onProgress(`Extracted ${extractedReferenceCount} cross-file references.`);
+        onProgress(`Extracted ${extractedReferenceCount} cross-file reference${extractedReferenceCount === 1 ? '' : 's'}.`);
       }
     } finally {
       // Terminate workers regardless of success or failure
@@ -297,7 +300,7 @@ export class Indexer {
     const workerScript = new URL("./worker.js", import.meta.url);
 
     if (scannedFilesToParse.length > 0 && onProgress) {
-      onProgress(`Spawning up to ${workerCount} worker threads for ${scannedFilesToParse.length} files...`);
+      onProgress(`Spawning up to ${workerCount} worker threads for ${scannedFilesToParse.length} file${scannedFilesToParse.length === 1 ? '' : 's'}...`);
     }
 
     const startWorker = (filesBatch: any[]) => {
@@ -340,8 +343,8 @@ export class Indexer {
       }
 
       if (onProgress) {
-        onProgress(`Parsed ${parsedCount} files successfully.`);
-        onProgress(`Extracted ${extractedSymbolCount} new symbols.`);
+        onProgress(`Parsed ${parsedCount} file${parsedCount === 1 ? '' : 's'} successfully.`);
+        onProgress(`Extracted ${extractedSymbolCount} new symbol${extractedSymbolCount === 1 ? '' : 's'}.`);
       }
 
       // Track ALL existing symbols (minus affected) + new symbols for reference extraction
@@ -385,7 +388,7 @@ export class Indexer {
         }
 
         if (onProgress) {
-          onProgress(`Extracted ${extractedReferenceCount} cross-file references.`);
+          onProgress(`Extracted ${extractedReferenceCount} cross-file reference${extractedReferenceCount === 1 ? '' : 's'}.`);
         }
       }
     } finally {
@@ -438,7 +441,10 @@ export class Indexer {
       callEdgeCount: callSnapshot.edges.length,
       chunkCount: allChunks.length,
       embeddingCount: embeddings.length,
-      durationMs
+      durationMs,
+      addedCount: changes.added.length,
+      modifiedCount: changes.modified.length,
+      deletedCount: changes.deleted.length
     };
   }
 }

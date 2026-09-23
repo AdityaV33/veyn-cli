@@ -29,6 +29,18 @@ export function registerReindexCommand(program: Command) {
         const storage = new MongoIndexStorage({ uri: process.env.MONGODB_URI });
         await storage.connect();
 
+        const sigintHandler = async () => {
+          Presenter.endStep();
+          Presenter.error("Indexing cancelled by user.");
+          Presenter.section("Next step");
+          Presenter.text("Run `veyn reindex .` again to resume incremental indexing.");
+          try {
+            await storage.disconnect();
+          } catch (e) {}
+          process.exit(2);
+        };
+        process.on("SIGINT", sigintHandler);
+
         try {
           const existingMeta = await storage.getMetadata(identity.id);
           if (!existingMeta) {
@@ -42,6 +54,10 @@ export function registerReindexCommand(program: Command) {
 
           Presenter.title("Updating Index");
           Presenter.item("Repository", identity.name);
+          
+          Presenter.section("Index mode");
+          Presenter.text("Incremental repository update");
+
           Presenter.section("Index status");
 
           const result = await indexer.reindex(
@@ -70,12 +86,15 @@ export function registerReindexCommand(program: Command) {
           }
 
         } finally {
+          process.off("SIGINT", sigintHandler);
           await storage.disconnect();
         }
 
       } catch (error: any) {
         if (error instanceof ScannerError || error instanceof ParserError || error instanceof PersistenceError) {
           Presenter.error(error.message);
+          Presenter.section("Next step");
+          Presenter.text("Fix the issue and run `veyn reindex .` again.");
           process.exit(1);
         }
         throw error;

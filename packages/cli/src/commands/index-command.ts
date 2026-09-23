@@ -5,14 +5,14 @@ import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerIndexCommand(program: Command) {
   program
-    .command("index <path>")
-    .description("Index a path")
-    .action(async (repoPath: string) => {
+    .command("index [path]")
+    .description("Index a repository.\nDefaults to the current directory.")
+    .action(async (repoPath: string = ".") => {
       try {
         const absoluteRepoPath = path.resolve(repoPath);
 
         if (!process.env.MONGODB_URI) {
-          Presenter.error("Persistence Error: MONGODB_URI environment variable is missing.");
+          Presenter.error("MONGODB_URI environment variable is missing.");
           Presenter.text("Index was generated in memory but could not be persisted to MongoDB Atlas.");
           Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
@@ -24,12 +24,28 @@ export function registerIndexCommand(program: Command) {
         const storage = new MongoIndexStorage({ uri: process.env.MONGODB_URI });
         await storage.connect();
 
+        const sigintHandler = async () => {
+          Presenter.endStep();
+          Presenter.error("Indexing cancelled by user.");
+          Presenter.section("Next step");
+          Presenter.text("Run `veyn index .` again to restart indexing.");
+          try {
+            await storage.disconnect();
+          } catch (e) {}
+          process.exit(2);
+        };
+        process.on("SIGINT", sigintHandler);
+
         try {
           const provider = new LocalEmbeddingProvider();
           const indexer = new Indexer(storage, provider);
 
           Presenter.title("Indexing Repository");
           Presenter.item("Repository", identity.name);
+          
+          Presenter.section("Index mode");
+          Presenter.text("Full repository index");
+
           Presenter.section("Index status");
 
           const stats = await indexer.index(absoluteRepoPath, identity.id, identity.name, (msg) => {
@@ -58,18 +74,15 @@ export function registerIndexCommand(program: Command) {
           console.log("");
 
         } finally {
+          process.off("SIGINT", sigintHandler);
           await storage.disconnect();
         }
 
       } catch (error: any) {
-        if (error instanceof ScannerError) {
-          Presenter.error(`Scanner Error: ${error.message}`);
-          process.exit(1);
-        } else if (error instanceof ParserError) {
-          Presenter.error(`Parser Error: ${error.message}`);
-          process.exit(1);
-        } else if (error instanceof PersistenceError) {
-          Presenter.error(`Persistence Error: ${error.message}`);
+        if (error instanceof ScannerError || error instanceof ParserError || error instanceof PersistenceError) {
+          Presenter.error(error.message);
+          Presenter.section("Next step");
+          Presenter.text("Fix the issue and run `veyn index .` again to restart indexing.");
           process.exit(1);
         }
 

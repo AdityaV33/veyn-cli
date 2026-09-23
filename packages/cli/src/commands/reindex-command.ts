@@ -11,12 +11,12 @@ import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerReindexCommand(program: Command) {
   program
-    .command("reindex <path>")
-    .description("Incrementally reindex a path based on changed files")
-    .action(async (repoPath: string) => {
+    .command("reindex [path]")
+    .description("Incrementally reindex a repository.\nDefaults to the current directory.")
+    .action(async (repoPath: string = ".") => {
       try {
         if (!process.env.MONGODB_URI) {
-          Presenter.error("Persistence Error: MONGODB_URI environment variable is missing.");
+          Presenter.error("MONGODB_URI environment variable is missing.");
           Presenter.text("Incremental reindexing requires a configured MongoDB connection.");
           Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
@@ -74,14 +74,8 @@ export function registerReindexCommand(program: Command) {
         }
 
       } catch (error: any) {
-        if (error instanceof ScannerError) {
-          Presenter.error(`Scanner Error: ${error.message}`);
-          process.exit(1);
-        } else if (error instanceof ParserError) {
-          Presenter.error(`Parser Error: ${error.message}`);
-          process.exit(1);
-        } else if (error instanceof PersistenceError) {
-          Presenter.error(`Persistence Error: ${error.message}`);
+        if (error instanceof ScannerError || error instanceof ParserError || error instanceof PersistenceError) {
+          Presenter.error(error.message);
           process.exit(1);
         }
         throw error;

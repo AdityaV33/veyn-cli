@@ -77,6 +77,17 @@ export class HealthAnalyzer {
 
     for (const sym of symbols) {
       if (sym.kind === "function") {
+        const isTest = sym.filePath.includes(".test.") || sym.filePath.includes("__tests__");
+        const isEntryPoint = 
+          sym.name.startsWith("register") || 
+          sym.name === "createCli" || 
+          sym.name === "createServer" || 
+          sym.name === "runBenchmark";
+
+        if (isTest || isEntryPoint) {
+          continue;
+        }
+
         // Just extract the basename for a robust check
         const basename = sym.filePath.split(/[\\/]/).pop() || sym.filePath;
         const id = `${basename}:${sym.name}`;
@@ -107,7 +118,10 @@ export class HealthAnalyzer {
       const deps = depGraph.getDependencies(node.id).length;
       const dependents = depGraph.getDependents(node.id).length;
       if (deps === 0 && dependents === 0) {
-        structuralIssues.push(`Isolated module: ${node.id}`);
+        const isTest = node.id.includes('.test.') || node.id.includes('__tests__');
+        if (!node.id.includes('.config.') && !isTest) {
+          structuralIssues.push(`Isolated module: ${node.id}`);
+        }
       }
     }
 

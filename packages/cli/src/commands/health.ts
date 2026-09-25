@@ -10,11 +10,12 @@ export function registerHealthCommand(program: Command) {
     .action(async () => {
       try {
         if (!process.env.MONGODB_URI) {
-          console.log("\nError");
-          Presenter.text("MongoDB connection is unavailable.");
+          Presenter.title("Health");
           console.log("");
-          console.log("Next step");
-          Presenter.text("Check MONGODB_URI and try again.");
+          console.log("Error");
+          Presenter.text("Could not connect to the index database.");
+          console.log("\nNext step");
+          Presenter.text("Check MONGODB_URI and ensure MongoDB is reachable.");
           process.exit(1);
         }
 
@@ -27,7 +28,7 @@ export function registerHealthCommand(program: Command) {
         await storage.connect();
 
         try {
-          const analyzer = new HealthAnalyzer(storage, identity.id);
+          const analyzer = new HealthAnalyzer(storage, identity.id, absoluteRepoPath);
 
           Presenter.title("Health");
           
@@ -46,7 +47,7 @@ export function registerHealthCommand(program: Command) {
 
           console.log("Health summary");
           if (totalSignals > 0) {
-            Presenter.warning(`${totalSignals} categor${totalSignals === 1 ? 'y' : 'ies'} need review`);
+            Presenter.warning(`${totalSignals} categor${totalSignals === 1 ? 'y needs' : 'ies need'} review`);
           } else {
             Presenter.success("No structural signals found");
           }
@@ -55,8 +56,6 @@ export function registerHealthCommand(program: Command) {
 
           console.log("Note");
           Presenter.text("These findings are advisory. They do not mean the project is broken.");
-          console.log("");
-
           Presenter.section("Findings");
 
           // Circular Dependencies
@@ -104,8 +103,8 @@ export function registerHealthCommand(program: Command) {
             });
           } else {
             Presenter.success("No dependency cycles detected");
-            console.log("");
           }
+          console.log("");
 
           // High Coupling
           console.log("Highly connected modules");
@@ -114,18 +113,18 @@ export function registerHealthCommand(program: Command) {
             console.log("");
 
             report.highCoupling.forEach(hc => {
-              const match = hc.match(/(.*) \(fan-in: (\d+), fan-out: (\d+)\)/);
-              if (match) {
-                Presenter.text(`${match[1]}`);
-                Presenter.text(`  ${match[2]} modules depend on it`);
-                Presenter.text(`  ${match[3]} modules it depends on`);
+              const parts = hc.split('::');
+              if (parts.length === 3) {
+                Presenter.text(`${parts[0]}`);
+                Presenter.text(`  ${parts[1]} modules depend on it`);
+                Presenter.text(`  ${parts[2]} modules it depends on`);
                 console.log("");
               }
             });
           } else {
             Presenter.success("No highly connected modules");
-            console.log("");
           }
+          console.log("");
 
           // Isolated Modules
           console.log("Possible isolated files");
@@ -134,16 +133,13 @@ export function registerHealthCommand(program: Command) {
             console.log("");
 
             report.structuralIssues.forEach(si => {
-              const match = si.match(/Isolated module: (.*)/);
-              if (match) {
-                Presenter.text(`${match[1]}`);
-              }
+              Presenter.text(`${si}`);
             });
             console.log("");
           } else {
             Presenter.success("No isolated files");
-            console.log("");
           }
+          console.log("");
 
           // Unused Code Signals
           console.log("Functions with no recorded internal callers");
@@ -152,14 +148,7 @@ export function registerHealthCommand(program: Command) {
             console.log("");
 
             report.deadCodeSignals.forEach(dc => {
-              let displayPath = dc;
-              if (displayPath.startsWith(absoluteRepoPath)) {
-                displayPath = displayPath.substring(absoluteRepoPath.length);
-                if (displayPath.startsWith('/') || displayPath.startsWith('\\')) {
-                  displayPath = displayPath.substring(1);
-                }
-              }
-              Presenter.text(`${displayPath}`);
+              Presenter.text(`${dc}`);
             });
 
             if (report.deadCodeSignals.length === 50) {
@@ -168,11 +157,10 @@ export function registerHealthCommand(program: Command) {
             console.log("");
             Presenter.text("This is only a signal. Exported functions, public APIs,");
             Presenter.text("entry points, and dynamically used functions may still be valid.");
-            console.log("");
           } else {
             Presenter.success("No unused code signals");
-            console.log("");
           }
+          console.log("");
 
           // Large Files
           console.log("Large files");
@@ -180,13 +168,18 @@ export function registerHealthCommand(program: Command) {
             Presenter.warning(`${report.largeFiles.length} unusually large file${report.largeFiles.length === 1 ? '' : 's'} (>50KB)`);
             console.log("");
             report.largeFiles.forEach(lf => {
-              Presenter.text(`${lf}`);
+              const parts = lf.split('::');
+              if (parts.length === 2) {
+                const kb = (parseInt(parts[1], 10) / 1024).toFixed(1);
+                Presenter.text(`${parts[0]}`);
+                Presenter.text(`  ${kb} KB`);
+                console.log("");
+              }
             });
-            console.log("");
           } else {
             Presenter.success("No unusually large files");
-            console.log("");
           }
+          console.log("");
 
           if (totalSignals > 0) {
             console.log("Next step");
@@ -198,18 +191,12 @@ export function registerHealthCommand(program: Command) {
         }
 
       } catch (error: any) {
-        if (error instanceof PersistenceError) {
-          console.log("\nError");
-          Presenter.text("MongoDB connection is unavailable.");
-          console.log("");
-          console.log("Next step");
-          Presenter.text("Check MONGODB_URI and try again.");
-          process.exit(1);
-        }
-
-        console.log("\nError");
-        Presenter.text(`Unexpected Error: ${error.message}`);
+        Presenter.title("Health");
         console.log("");
+        console.log("Error");
+        Presenter.text("Could not connect to the index database.");
+        console.log("\nNext step");
+        Presenter.text("Check MONGODB_URI and ensure MongoDB is reachable.");
         process.exit(1);
       }
     });

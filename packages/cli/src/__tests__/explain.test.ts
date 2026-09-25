@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Command } from 'commander';
+import { createLLMAdapter, loadLLMConfig } from '@veyn/agent';
 import { registerExplainCommand } from '../commands/explain.js';
 import { RepositoryIdentityResolver, MongoIndexStorage } from '@veyn/core';
-import { GroqAdapter } from '@veyn/agent';
+
 import { Presenter } from '../ui/presenter.js';
 
 vi.mock('@veyn/core', async () => {
@@ -18,7 +19,8 @@ vi.mock('@veyn/agent', async () => {
   const actual = await vi.importActual('@veyn/agent');
   return {
     ...actual,
-    GroqAdapter: vi.fn(),
+    createLLMAdapter: vi.fn(),
+    loadLLMConfig: vi.fn(),
   };
 });
 
@@ -59,9 +61,7 @@ describe('Explain Command', () => {
       invoke: vi.fn().mockResolvedValue('This is an explanation.'),
     };
 
-    (GroqAdapter as any).mockImplementation(function() {
-      return mockLlm;
-    });
+    (createLLMAdapter as any).mockReturnValue(mockLlm);
 
     (RepositoryIdentityResolver as any).mockImplementation(function() {
       return {

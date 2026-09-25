@@ -10,10 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@google/genai": "^2.24.0",
     "@langchain/core": "^0.3.42",
     "@langchain/langgraph": "^0.2.53",
     "@veyn/core": "workspace:*",
-    "groq-sdk": "^0.13.0",
     "zod": "^4.5.4"
   }
 }

@@ -23,7 +23,7 @@ export async function createServer(config: ServerConfig): Promise<Express> {
 
   app.get("/health", async (req, res) => {
     try {
-      const analyzer = new HealthAnalyzer(storage, identity.id);
+      const analyzer = new HealthAnalyzer(storage, identity.id, config.repositoryPath);
       const report = await analyzer.analyze();
       res.json({ status: "success", data: report });
     } catch (error: any) {
@@ -116,13 +116,20 @@ export async function createServer(config: ServerConfig): Promise<Express> {
 
       // We dynamically import agent dependencies since @veyn/server shouldn't strictly depend on agent for health, etc.
       // Actually we should just import them at the top.
-      const { GroqAdapter, ToolRegistry, registerCoreTools, createInvestigationGraph } = await import("@veyn/agent");
+      const { createLLMAdapter, loadLLMConfig, ToolRegistry, registerCoreTools, createInvestigationGraph } = await import("@veyn/agent");
 
+      let adapter;
+      try {
+        adapter = createLLMAdapter(loadLLMConfig());
+      } catch (e: any) {
+        throw new Error(e.message);
+      }
+      
       const llms = {
-        planner: new GroqAdapter(config.groqApiKey, "groq/compound-mini", 0),
-        investigator: new GroqAdapter(config.groqApiKey, "groq/compound-mini", 0),
-        reflection: new GroqAdapter(config.groqApiKey, "groq/compound-mini", 0),
-        reporter: new GroqAdapter(config.groqApiKey, "groq/compound", 2)
+        planner: adapter,
+        investigator: adapter,
+        reflection: adapter,
+        reporter: adapter
       };
       
       const registry = new ToolRegistry();

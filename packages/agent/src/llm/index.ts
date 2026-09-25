@@ -4,6 +4,8 @@ export interface LLMAdapter {
   invoke(messages: BaseMessage[]): Promise<string>;
 }
 
-export * from "./groq.js";
 export * from "./mock.js";
 export * from "./normalize.js";
+export * from "./gemini.js";
+export * from "./factory.js";
+export * from "./resilient.js";

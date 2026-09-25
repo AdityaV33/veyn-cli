@@ -1,11 +1,11 @@
 import { RepositoryIdentityResolver, MongoIndexStorage } from "@veyn/core";
-import { GroqAdapter, ToolRegistry, registerCoreTools, createInvestigationGraph, LLMAdapter } from "@veyn/agent";
+import { createLLMAdapter, loadLLMConfig, ToolRegistry, registerCoreTools, createInvestigationGraph, LLMAdapter } from "@veyn/agent";
 import { BaseMessage } from "@langchain/core/messages";
 import { performance } from "perf_hooks";
 
 // A wrapper to collect LLM metrics
-class TelemetryGroqAdapter implements LLMAdapter {
-  constructor(private inner: GroqAdapter, private metrics: any) {}
+class TelemetryLLMAdapter implements LLMAdapter {
+  constructor(private inner: LLMAdapter, private metrics: any) {}
   
   async invoke(messages: BaseMessage[]): Promise<string> {
     const start = performance.now();
@@ -55,8 +55,9 @@ async function runBenchmark(question: string) {
   await storage.connect();
   const identity = new RepositoryIdentityResolver().resolve(process.cwd());
 
-  const fastModel = new TelemetryGroqAdapter(new GroqAdapter(process.env.GROQ_API_KEY!, "groq/compound-mini", 0), metrics);
-  const strongModel = new TelemetryGroqAdapter(new GroqAdapter(process.env.GROQ_API_KEY!, "groq/compound-mini", 2), metrics);
+  const adapter = createLLMAdapter(loadLLMConfig());
+  const fastModel = new TelemetryLLMAdapter(adapter, metrics);
+  const strongModel = new TelemetryLLMAdapter(adapter, metrics);
   const llms = {
     planner: fastModel,
     investigator: fastModel,

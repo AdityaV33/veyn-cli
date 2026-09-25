@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { RepositoryIdentityResolver, MongoIndexStorage, PersistenceError } from "@veyn/core";
-import { GroqAdapter, ToolRegistry, registerCoreTools, createInvestigationGraph } from "@veyn/agent";
+import { createLLMAdapter, loadLLMConfig, ToolRegistry, registerCoreTools, createInvestigationGraph } from "@veyn/agent";
 
 export function registerInvestigateCommand(program: Command) {
   program
@@ -16,10 +16,11 @@ export function registerInvestigateCommand(program: Command) {
           process.exit(1);
         }
 
-        if (!process.env.GROQ_API_KEY) {
-          console.error("\nConfiguration Error: GROQ_API_KEY environment variable is missing.");
-          console.error("Veyn investigate requires Groq API access.");
-          console.error("Please configure GROQ_API_KEY and try again.\n");
+        let llmConfig;
+        try {
+          llmConfig = loadLLMConfig();
+        } catch (e: any) {
+          console.error(`\n${e.message}\n`);
           process.exit(1);
         }
 
@@ -31,11 +32,12 @@ export function registerInvestigateCommand(program: Command) {
 
         try {
           await storage.connect();
+          const adapter = createLLMAdapter(llmConfig);
           const llms = {
-            planner: new GroqAdapter(process.env.GROQ_API_KEY, "groq/compound-mini", 0),
-            investigator: new GroqAdapter(process.env.GROQ_API_KEY, "groq/compound-mini", 0),
-            reflection: new GroqAdapter(process.env.GROQ_API_KEY, "groq/compound-mini", 0),
-            reporter: new GroqAdapter(process.env.GROQ_API_KEY, "groq/compound", 2)
+            planner: adapter,
+            investigator: adapter,
+            reflection: adapter,
+            reporter: adapter
           };
           const registry = new ToolRegistry();
           registerCoreTools(registry);

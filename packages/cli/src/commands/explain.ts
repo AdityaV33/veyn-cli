@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import path from "node:path";
 import { RepositoryIdentityResolver, MongoIndexStorage, PersistenceError, SymbolRecord } from "@veyn/core";
-import { GroqAdapter } from "@veyn/agent";
+import { createLLMAdapter, loadLLMConfig } from "@veyn/agent";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import { Presenter } from "../ui/presenter.js";
 
@@ -16,8 +16,11 @@ export function registerExplainCommand(program: Command) {
           process.exit(1);
         }
 
-        if (!process.env.GROQ_API_KEY) {
-          Presenter.error("Configuration Error: GROQ_API_KEY environment variable is missing.\nVeyn explain requires Groq API access.\nPlease configure GROQ_API_KEY and try again.");
+        let llmConfig;
+        try {
+          llmConfig = loadLLMConfig();
+        } catch (e: any) {
+          Presenter.error(e.message);
           process.exit(1);
         }
 
@@ -215,7 +218,7 @@ ${uniqueRefs.length > 0 ? uniqueRefs.join("\n") : "No references found"}
           Presenter.text(`✓ ${uniqueRefs.length} reference${uniqueRefs.length === 1 ? "" : "s"} found`);
           console.log("");
 
-          const llm = new GroqAdapter(process.env.GROQ_API_KEY);
+          const llm = createLLMAdapter(llmConfig);
 
           const systemPrompt = "You are an expert AI code assistant. Your job is to provide ONE cohesive explanation of the target. You are provided with the target's code and structural evidence (callers, callees, imports). Use this evidence to understand the target's purpose and context, but DO NOT list, summarize, or repeat the relationships, module dependencies, callers, or references in your response. The CLI already prints these deterministically. Return ONLY a concise, plain text explanation (a few paragraphs or short numbered description) of what the target is and how it works internally. Do not output separate sections.";
           const userPrompt = structuredEvidence;

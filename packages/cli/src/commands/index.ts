@@ -8,4 +8,3 @@ export * from './stats.js';
 export * from './graph.js';
 export * from './investigate.js';
 export * from './explain.js';
-export * from './serve.js';

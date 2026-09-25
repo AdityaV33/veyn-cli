@@ -9,8 +9,7 @@ import {
   registerStatsCommand,
   registerGraphCommand,
   registerInvestigateCommand,
-  registerExplainCommand,
-  registerServeCommand
+  registerExplainCommand
 } from './commands/index.js';
 
 export function createCli() {
@@ -31,7 +30,6 @@ export function createCli() {
   registerGraphCommand(program);
   registerInvestigateCommand(program);
   registerExplainCommand(program);
-  registerServeCommand(program);
 
   return program;
 }

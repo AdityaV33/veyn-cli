@@ -40,9 +40,9 @@ An AI-powered repository investigation engine that combines deterministic static
 
 | Component | Final choice |
 |---|---|
-| LLM provider | **Gemini (Google Gen AI)** |
-| LLM | **gemini-3.1-flash-lite initially** |
-| LLM SDK | **Google Gen AI TypeScript SDK** |
+| LLM provider | **Groq** |
+| LLM | **llama-3.1-70b-versatile initially** |
+| LLM SDK | **Groq TypeScript SDK** |
 | Tool calling | **JSON-in-prompt with Zod validation** |
 | Embeddings | **Local `BAAI/bge-small-en-v1.5`** *(changed from Groq/OpenAI)* |
 | **Agent orchestration** | **LangGraph** *(changed from custom state machine)* |
@@ -59,7 +59,7 @@ An AI-powered repository investigation engine that combines deterministic static
 >
 > **Change from prior draft:** Embeddings now use **local `BAAI/bge-small-en-v1.5`** via `@xenova/transformers` instead of Groq/OpenAI:
 > - Provides high-quality source code retrieval entirely locally without external API dependencies.
-> - Keeps the API surface minimized to exactly one provider (Gemini) for LLM reasoning.
+> - Keeps the API surface minimized to exactly one provider (Groq) for LLM reasoning.
 > - Fits cleanly into the `EmbeddingProvider` abstraction and MongoDB Atlas Vector Search pipeline.
 > - Keeps embedding costs at exactly $0, with low local resource overhead.
 

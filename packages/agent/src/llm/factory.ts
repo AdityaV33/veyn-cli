@@ -1,36 +1,36 @@
-import { GeminiAdapter } from "./gemini.js";
+import { GroqAdapter } from "./groq.js";
 import { ResilientLLMAdapter } from "./resilient.js";
 import { LLMAdapter } from "./index.js";
 
 export interface LLMConfig {
-  provider: "gemini";
+  provider: "groq";
   apiKey: string;
   primaryModel: string;
   fallbackModel: string;
 }
 
-const DEFAULT_PRIMARY_MODEL = "gemini-3.1-flash-lite";
-const DEFAULT_FALLBACK_MODEL = "gemini-3.8-flash";
+const DEFAULT_PRIMARY_MODEL = "llama-3.1-70b-versatile";
+const DEFAULT_FALLBACK_MODEL = "llama-3.1-8b-instant";
 
 /**
  * Load LLM configuration from environment variables.
  * Throws if required variables are missing.
  */
 export function loadLLMConfig(): LLMConfig {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     throw new Error(
-      "Configuration Error: GEMINI_API_KEY environment variable is missing.\n" +
-      "Veyn requires Gemini API access for reasoning.\n" +
-      "Please configure GEMINI_API_KEY and try again."
+      "Configuration Error: GROQ_API_KEY environment variable is missing.\n" +
+      "Veyn requires Groq API access for reasoning.\n" +
+      "Please configure GROQ_API_KEY and try again."
     );
   }
 
   return {
-    provider: "gemini",
+    provider: "groq",
     apiKey,
-    primaryModel: process.env.GEMINI_PRIMARY_MODEL || DEFAULT_PRIMARY_MODEL,
-    fallbackModel: process.env.GEMINI_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL,
+    primaryModel: process.env.GROQ_PRIMARY_MODEL || DEFAULT_PRIMARY_MODEL,
+    fallbackModel: process.env.GROQ_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL,
   };
 }
 
@@ -40,7 +40,7 @@ export function loadLLMConfig(): LLMConfig {
  * errors using the fallback model.
  */
 export function createLLMAdapter(config: LLMConfig): LLMAdapter {
-  const primary = new GeminiAdapter(config.apiKey, config.primaryModel);
-  const fallback = new GeminiAdapter(config.apiKey, config.fallbackModel);
+  const primary = new GroqAdapter(config.apiKey, config.primaryModel);
+  const fallback = new GroqAdapter(config.apiKey, config.fallbackModel);
   return new ResilientLLMAdapter(primary, fallback);
 }

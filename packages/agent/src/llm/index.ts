@@ -6,6 +6,6 @@ export interface LLMAdapter {
 
 export * from "./mock.js";
 export * from "./normalize.js";
-export * from "./gemini.js";
+export * from "./groq.js";
 export * from "./factory.js";
 export * from "./resilient.js";

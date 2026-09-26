@@ -9,7 +9,9 @@ const taskSchema = z.object({
   status: z.enum(["pending", "in_progress", "completed", "failed"])
 });
 
-const plannerOutputSchema = z.array(taskSchema);
+const plannerOutputSchema = z.object({
+  tasks: z.array(taskSchema)
+});
 
 export function createPlannerNode(llm: LLMAdapter) {
   return async (state: InvestigationState): Promise<Partial<InvestigationState>> => {
@@ -21,7 +23,7 @@ export function createPlannerNode(llm: LLMAdapter) {
 Your job is to analyze the user's question and break it down into a highly targeted list of 2-3 investigation tasks.
 Do NOT output a granular checklist. Prioritize evidence that directly answers the question.
 
-The agent has the following tools available:
+The agent has the following actions available:
 - search_code: Search for code snippets matching a lexical query
 - find_references: Find exact references to a symbol by its canonical targetId (e.g. filePath:symbolName)
 - trace_function: Get functions that call this function, or functions called by it
@@ -31,8 +33,17 @@ The agent has the following tools available:
 - get_health: Get index health metadata
 
 You MUST produce at least one task, but aim for no more than 3 high-value independent tasks.
-Output ONLY a JSON array of tasks. Do not include markdown code blocks or conversational text.
-Each task must have an 'id' (MUST be a string, e.g. "task-1"), a 'description', and a 'status' (which should initially be 'pending').`;
+Output ONLY a JSON object matching this schema:
+{
+  "tasks": [
+    {
+      "id": "string",
+      "description": "string",
+      "status": "pending"
+    }
+  ]
+}
+Do not include markdown code blocks or conversational text.`;
 
     const userPrompt = `Question: ${state.question}`;
 
@@ -45,9 +56,9 @@ Each task must have an 'id' (MUST be a string, e.g. "task-1"), a 'description', 
       const cleanResponse = extractJSON(response);
       
       const parsed = JSON.parse(cleanResponse);
-      const validatedTasks = plannerOutputSchema.parse(parsed);
+      const validatedPayload = plannerOutputSchema.parse(parsed);
       
-      return { tasks: validatedTasks };
+      return { tasks: validatedPayload.tasks };
     } catch (e: any) {
       return { error: `Planner failed to generate valid structured tasks: ${e.message}` };
     }

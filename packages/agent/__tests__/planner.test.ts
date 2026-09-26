@@ -18,9 +18,11 @@ describe("Planner Node", () => {
   });
 
   it("1 & 5 & 7. returns valid structured output and updates state, using MockLLMAdapter", async () => {
-    const validJson = JSON.stringify([
-      { id: "task-1", description: "Search for auth logic", status: "pending" }
-    ]);
+    const validJson = JSON.stringify({
+      tasks: [
+        { id: "task-1", description: "Search for auth logic", status: "pending" }
+      ]
+    });
     const mock = new MockLLMAdapter([validJson]);
     const planner = createPlannerNode(mock);
     
@@ -46,10 +48,12 @@ describe("Planner Node", () => {
 
   it("2. returns multiple investigation tasks and handles markdown backticks", async () => {
     const multipleTasksJson = `\`\`\`json
-    [
-      { "id": "t1", "description": "Find express setup", "status": "pending" },
-      { "id": "t2", "description": "Find user routes", "status": "pending" }
-    ]
+    {
+      "tasks": [
+        { "id": "t1", "description": "Find express setup", "status": "pending" },
+        { "id": "t2", "description": "Find user routes", "status": "pending" }
+      ]
+    }
     \`\`\``;
     const mock = new MockLLMAdapter([multipleTasksJson]);
     const planner = createPlannerNode(mock);
@@ -90,7 +94,7 @@ describe("Planner Node", () => {
   it("6. Planner does not access Core/repository facts directly", async () => {
     // The planner only takes InvestigationState and returns Partial<InvestigationState>
     // It doesn't receive a MongoDB or Core instance, enforcing architectural isolation.
-    const mock = new MockLLMAdapter(["[]"]);
+    const mock = new MockLLMAdapter(['{ "tasks": [] }']);
     const planner = createPlannerNode(mock);
     const update = await planner(getEmptyState("Hello"));
     expect(update.tasks).toEqual([]);
@@ -99,7 +103,7 @@ describe("Planner Node", () => {
   });
 
   it("returns error if question is missing", async () => {
-    const mock = new MockLLMAdapter(["[]"]);
+    const mock = new MockLLMAdapter(['{ "tasks": [] }']);
     const planner = createPlannerNode(mock);
     const update = await planner(getEmptyState(""));
     expect(update.error).toBe("No question provided to Planner");

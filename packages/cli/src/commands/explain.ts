@@ -296,6 +296,13 @@ ${uniqueRefs.length > 0 ? uniqueRefs.join("\n") : "No references found"}
           Presenter.error(`Storage Error: ${error.message}`);
           process.exit(1);
         }
+
+        if (error.message && error.message.includes("Both primary and fallback models failed")) {
+          Presenter.error("Both Groq reasoning models failed.");
+          Presenter.text("Check the Groq service, model configuration, and API key, then try again.");
+          process.exit(1);
+        }
+
         Presenter.error(`Unexpected Error: ${error.message}`);
         process.exit(1);
       }

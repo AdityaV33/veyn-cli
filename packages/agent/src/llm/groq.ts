@@ -6,22 +6,31 @@ export class GroqAdapter implements LLMAdapter {
   private client: Groq;
   private model: string;
 
-  constructor(apiKey: string | undefined, model: string = "llama-3.1-70b-versatile", maxRetries: number = 2) {
+  constructor(apiKey: string | undefined, model: string, maxRetries: number = 2) {
     this.client = new Groq({ apiKey, maxRetries });
     this.model = model;
   }
 
   public async invoke(messages: BaseMessage[]): Promise<string> {
+    const expectsJson = messages.some(m => m._getType() === "system" && typeof m.content === "string" && m.content.toLowerCase().includes("output only a json object"));
+
     const formattedMessages = messages.map(m => {
        const type = m._getType();
        let role: "user" | "assistant" | "system" | "tool" = "user";
        if (type === "ai") role = "assistant";
-       else if (type === "system") role = "system";
+       else if (type === "system") {
+         role = "system";
+         // Instruct models not to emit native tool call tags that crash the Groq backend, only for JSON nodes
+         m.content = typeof m.content === "string" ? m.content : JSON.stringify(m.content);
+         if (expectsJson) {
+           m.content += "\n\nCRITICAL: DO NOT emit native function calls. Output raw JSON ONLY.";
+         }
+       }
        else if (type === "tool") role = "tool";
        
        return {
           role,
-          content: typeof m.content === "string" ? m.content : JSON.stringify(m.content)
+          content: m.content
        };
     });
 
@@ -29,6 +38,9 @@ export class GroqAdapter implements LLMAdapter {
       messages: formattedMessages,
       model: this.model,
     };
+    if (expectsJson) {
+      options.response_format = { type: "json_object" };
+    }
 
     const completion = await this.client.chat.completions.create(options);
 

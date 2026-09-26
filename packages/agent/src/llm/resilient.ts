@@ -12,13 +12,14 @@ const MODEL_AVAILABILITY_PATTERNS = [
   "does not exist",
   "not available in your region",
   "model has been deprecated",
+  "tool_use_failed",
 ];
 
 /**
  * HTTP status codes that indicate model unavailability
  * (as opposed to client errors or rate limits).
  */
-const RETRYABLE_STATUS_CODES = [404];
+const RETRYABLE_STATUS_CODES = [404, 429, 503];
 
 function isModelAvailabilityError(error: any): boolean {
   const message = (error?.message ?? String(error)).toLowerCase();
@@ -41,7 +42,8 @@ function isModelAvailabilityError(error: any): boolean {
 export class ResilientLLMAdapter implements LLMAdapter {
   constructor(
     private primary: LLMAdapter,
-    private fallback: LLMAdapter
+    private fallback: LLMAdapter,
+    private dynamicFallbackBuilder?: () => Promise<LLMAdapter>
   ) {}
 
   public async invoke(messages: import("@langchain/core/messages").BaseMessage[]): Promise<string> {
@@ -55,11 +57,25 @@ export class ResilientLLMAdapter implements LLMAdapter {
       try {
         return await this.fallback.invoke(messages);
       } catch (fallbackError: any) {
-        throw new Error(
-          `Both primary and fallback models failed.\n` +
-          `Primary: ${primaryError.message}\n` +
-          `Fallback: ${fallbackError.message}`
-        );
+        if (!isModelAvailabilityError(fallbackError) || !this.dynamicFallbackBuilder) {
+          throw new Error(
+            `Both primary and fallback models failed.\n` +
+            `Primary: ${primaryError.message}\n` +
+            `Fallback: ${fallbackError.message}`
+          );
+        }
+
+        try {
+          const dynamicAdapter = await this.dynamicFallbackBuilder();
+          return await dynamicAdapter.invoke(messages);
+        } catch (dynamicError: any) {
+          throw new Error(
+            `Both primary and fallback models failed.\n` +
+            `Primary: ${primaryError.message}\n` +
+            `Fallback: ${fallbackError.message}\n` +
+            `Dynamic: ${dynamicError.message}`
+          );
+        }
       }
     }
   }

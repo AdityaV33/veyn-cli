@@ -43,12 +43,12 @@ describe("LangGraph Investigation Engine", () => {
     // 6. Reporter
     const responses = [
       // 1. Planner
-      JSON.stringify([{ id: "t1", description: "find user schema", status: "pending" }]),
+      JSON.stringify({ tasks: [{ id: "t1", description: "find user schema", status: "pending" }] }),
       // 2. Investigator
       JSON.stringify({
         taskExecutions: [{
           taskId: "t1",
-          toolName: "get_architecture",
+          actionName: "get_architecture",
           arguments: {},
           taskStatus: "in_progress"
         }]
@@ -59,7 +59,7 @@ describe("LangGraph Investigation Engine", () => {
       JSON.stringify({
         taskExecutions: [{
           taskId: "t1",
-          toolName: "search_code",
+          actionName: "search_code",
           arguments: { query: "User" },
           taskStatus: "completed"
         }]
@@ -104,11 +104,11 @@ describe("LangGraph Investigation Engine", () => {
   it("5, 6. Safety STOP reaches Reporter and terminates", async () => {
     const responses = [
       // 1. Planner
-      JSON.stringify([{ id: "t1", description: "run", status: "pending" }]),
+      JSON.stringify({ tasks: [{ id: "t1", description: "run", status: "pending" }] }),
       // 2. Investigator (Repeated calls triggering safety limit)
-      JSON.stringify({ taskExecutions: [{ taskId: "t1", toolName: "get_health", arguments: {}, taskStatus: "in_progress" }] }), // Investigator 1
+      JSON.stringify({ taskExecutions: [{ taskId: "t1", actionName: "get_health", arguments: {}, taskStatus: "in_progress" }] }), // Investigator 1
       JSON.stringify({ decision: "CONTINUE", reason: "more" }), // Reflection 1
-      JSON.stringify({ taskExecutions: [{ taskId: "t1", toolName: "get_health", arguments: {}, taskStatus: "in_progress" }] }), // Investigator 2
+      JSON.stringify({ taskExecutions: [{ taskId: "t1", actionName: "get_health", arguments: {}, taskStatus: "in_progress" }] }), // Investigator 2
       // At Reflection 2, safety limit (maxRepeatedCalls: 2) kicks in and forces STOP
       // We don't provide a mock response for Reflection 2 because the node handles it natively without LLM
       // 3. Reporter (Final summary)

@@ -9,8 +9,8 @@ export interface LLMConfig {
   fallbackModel: string;
 }
 
-const DEFAULT_PRIMARY_MODEL = "llama-3.1-70b-versatile";
-const DEFAULT_FALLBACK_MODEL = "llama-3.1-8b-instant";
+const DEFAULT_PRIMARY_MODEL = "openai/gpt-oss-20b";
+const DEFAULT_FALLBACK_MODEL = "qwen/qwen3.8-27b";
 
 /**
  * Load LLM configuration from environment variables.
@@ -42,5 +42,41 @@ export function loadLLMConfig(): LLMConfig {
 export function createLLMAdapter(config: LLMConfig): LLMAdapter {
   const primary = new GroqAdapter(config.apiKey, config.primaryModel);
   const fallback = new GroqAdapter(config.apiKey, config.fallbackModel);
-  return new ResilientLLMAdapter(primary, fallback);
+
+  const dynamicFallbackBuilder = async (): Promise<LLMAdapter> => {
+    const baseUrl = process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1";
+    const res = await fetch(`${baseUrl}/models`, {
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch models: ${res.statusText}`);
+    }
+
+    const data = await res.json() as { data: { id: string, supported_features?: string[] }[] };
+
+    // Filter to only models that explicitly support Structured Outputs so LangChain doesn't crash
+    const capableModels = data.data.filter(m =>
+      m.supported_features && m.supported_features.includes("structured_outputs")
+    ).map(m => m.id);
+
+    // Pick a fast, stable model that supports JSON if possible.
+    const preferredPrefixes = ["llama-3.1", "llama3", "llama", "openai", "qwen"];
+    let selectedModel = capableModels.find(m => m !== config.primaryModel && m !== config.fallbackModel && preferredPrefixes.some(p => m.toLowerCase().includes(p)));
+
+    if (!selectedModel) {
+      // Pick any capable model as a last resort
+      selectedModel = capableModels.find(m => m !== config.primaryModel && m !== config.fallbackModel);
+    }
+
+    if (!selectedModel) {
+      throw new Error("No other models available on the provider.");
+    }
+
+    return new GroqAdapter(config.apiKey, selectedModel);
+  };
+
+  return new ResilientLLMAdapter(primary, fallback, dynamicFallbackBuilder);
 }

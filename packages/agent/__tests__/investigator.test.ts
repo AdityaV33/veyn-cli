@@ -40,7 +40,7 @@ describe("Investigator Node", () => {
     const invocationJson = JSON.stringify({
       taskExecutions: [{
         taskId: "t1",
-        toolName: "get_health",
+        actionName: "get_health",
         arguments: {},
         taskStatus: "completed"
       }]
@@ -79,7 +79,7 @@ describe("Investigator Node", () => {
     const invocationJson = JSON.stringify({
       taskExecutions: [{
         taskId: "t1",
-        toolName: "find_references",
+        actionName: "find_references",
         arguments: { "wrongField": "123" },
         taskStatus: "in_progress"
       }]
@@ -103,7 +103,7 @@ describe("Investigator Node", () => {
     const invocationJson = JSON.stringify({
       taskExecutions: [{
         taskId: "t1",
-        toolName: "run_arbitrary_shell_command",
+        actionName: "run_arbitrary_shell_command",
         arguments: { "cmd": "rm -rf /" },
         taskStatus: "completed"
       }]
@@ -116,7 +116,7 @@ describe("Investigator Node", () => {
     
     expect(update.error).toBeUndefined();
     expect(update.evidence).toBeDefined();
-    expect(update.evidence![0]).toContain("Investigator requested unknown tool");
+    expect(update.evidence![0]).toContain("Investigator requested unknown action");
   });
 
   it("10, 11. No filesystem/shell access occurs, Mock Core works without MongoDB", async () => {
@@ -144,7 +144,7 @@ describe("Investigator Node", () => {
       JSON.stringify({
         taskExecutions: [{
           taskId: "t1",
-          toolName: "get_health",
+          actionName: "get_health",
           arguments: {},
           taskStatus: "completed"
         }]

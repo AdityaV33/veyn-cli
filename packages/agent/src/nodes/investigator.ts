@@ -7,7 +7,7 @@ import { z } from "zod";
 const investigatorResponseSchema = z.object({
   taskExecutions: z.array(z.object({
     taskId: z.string(),
-    toolName: z.string(),
+    actionName: z.string(),
     arguments: z.record(z.string(), z.any()),
     taskStatus: z.enum(["in_progress", "completed", "failed"])
   }))
@@ -24,12 +24,12 @@ export function createInvestigatorNode(llm: LLMAdapter, registry: ToolRegistry, 
 
     const availableTools = registry.getAvailableTools();
     const systemPrompt = `You are the Investigator for an AI code investigation agent.
-Your job is to select the most appropriate tools to make progress on the current pending tasks.
-Do NOT guess or invent facts. Use the provided tools.
-You can execute tools for multiple tasks at the same time if they are independent.
-Provide exactly ONE tool call per task you wish to make progress on.
+Your job is to select the most appropriate actions to make progress on the current pending tasks.
+Do NOT guess or invent facts. Use the provided actions.
+You can execute actions for multiple tasks at the same time if they are independent.
+Provide exactly ONE action call per task you wish to make progress on.
 
-Available tools:
+Available actions:
 ${JSON.stringify(availableTools, null, 2)}
 
 You must output ONLY a JSON object matching this schema:
@@ -37,7 +37,7 @@ You must output ONLY a JSON object matching this schema:
   "taskExecutions": [
     {
       "taskId": "string",
-      "toolName": "string",
+      "actionName": "string",
       "arguments": {},
       "taskStatus": "in_progress" | "completed" | "failed"
     }
@@ -73,10 +73,10 @@ Tool History: ${JSON.stringify(minimalHistory)}
       const newEvidence: string[] = [];
 
       // 2. Execute tools concurrently where independent
-      await Promise.all(invocation.taskExecutions.map(async (exec) => {
-        const tool = registry.getTool(exec.toolName);
+      await Promise.all(invocation.taskExecutions.map(async (exec: any) => {
+        const tool = registry.getTool(exec.actionName || exec.toolName);
         if (!tool) {
-           newEvidence.push(`Investigator requested unknown tool: ${exec.toolName} for task ${exec.taskId}`);
+           newEvidence.push(`Investigator requested unknown action: ${exec.actionName || exec.toolName} for task ${exec.taskId}`);
            return;
         }
 

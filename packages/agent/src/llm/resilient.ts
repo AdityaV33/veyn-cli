@@ -58,23 +58,14 @@ export class ResilientLLMAdapter implements LLMAdapter {
         return await this.fallback.invoke(messages);
       } catch (fallbackError: any) {
         if (!isModelAvailabilityError(fallbackError) || !this.dynamicFallbackBuilder) {
-          throw new Error(
-            `Both primary and fallback models failed.\n` +
-            `Primary: ${primaryError.message}\n` +
-            `Fallback: ${fallbackError.message}`
-          );
+          throw new Error("Groq reasoning models are currently unavailable.");
         }
 
         try {
           const dynamicAdapter = await this.dynamicFallbackBuilder();
           return await dynamicAdapter.invoke(messages);
         } catch (dynamicError: any) {
-          throw new Error(
-            `Both primary and fallback models failed.\n` +
-            `Primary: ${primaryError.message}\n` +
-            `Fallback: ${fallbackError.message}\n` +
-            `Dynamic: ${dynamicError.message}`
-          );
+          throw new Error("Groq reasoning models are currently unavailable.");
         }
       }
     }

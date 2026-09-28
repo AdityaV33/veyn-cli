@@ -123,7 +123,15 @@ export function registerInvestigateCommand(program: Command) {
           }
 
           if (finalState.error) {
-            Presenter.error(finalState.error);
+            const errorMsg = typeof finalState.error === "string" ? finalState.error : (finalState.error.message || String(finalState.error));
+            if (errorMsg.includes("Groq reasoning models are currently unavailable")) {
+              Presenter.section("Error");
+              Presenter.text("Groq reasoning models are currently unavailable.");
+              Presenter.section("Next step");
+              Presenter.text("Check the model configuration and try again.");
+            } else {
+              Presenter.error(finalState.error);
+            }
             process.exit(1);
           }
 
@@ -166,11 +174,11 @@ export function registerInvestigateCommand(program: Command) {
           process.exit(1);
         }
 
-        if (error.message && error.message.includes("Both primary and fallback models failed")) {
+        if (error.message && error.message.includes("Groq reasoning models are currently unavailable")) {
           Presenter.section("Error");
-          Presenter.text("Both Groq reasoning models failed.");
+          Presenter.text("Groq reasoning models are currently unavailable.");
           Presenter.section("Next step");
-          Presenter.text("Check the Groq service, model configuration, and API key, then try again.");
+          Presenter.text("Check the model configuration and try again.");
           process.exit(1);
         }
 

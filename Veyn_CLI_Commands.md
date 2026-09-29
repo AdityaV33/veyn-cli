@@ -6,7 +6,7 @@ Veyn CLI is an AI-powered repository investigation engine for TypeScript codebas
 
 There are two categories of commands:
 - **Deterministic commands** — 100% offline from the LLM's perspective. No API calls, no reasoning, just static analysis and stored data.
-- **Agentic commands** — invoke the LLM (via Gemini) through a LangGraph-orchestrated reasoning loop.
+- **Agentic commands** — invoke the LLM (via Groq) through a LangGraph-orchestrated reasoning loop.
 
 ---
 
@@ -122,7 +122,7 @@ Exports the dependency/call graph to a file.
 
 ## Agentic Commands
 
-These two commands are the only ones that involve the LLM. Both use Gemini for reasoning, with tool calls routed exclusively through the deterministic core above — the LLM never has raw, unrestricted access to the codebase.
+These two commands are the only ones that involve the LLM. Both use Groq for reasoning, with tool calls routed exclusively through the deterministic core above — the LLM never has raw, unrestricted access to the codebase.
 
 ### `veyn investigate "<question>" [--stream]`
 
@@ -136,10 +136,10 @@ The flagship command. Answers open-ended, multi-step questions about the codebas
 
 **Example:**
 ```
-veyn investigate "Why does authentication fail after token refresh?"
+pnpm veyn investigate "Why does authentication fail after token refresh?"
 ```
 
-**When to use it:** Any question that requires connecting multiple pieces of the codebase together, not just a single lookup — root-cause analysis, "how does X actually work end-to-end," comparisons between components, etc. Comparisons and reviews are handled as investigations rather than separate commands (e.g., `veyn investigate "Compare AuthService and UserService"`).
+**When to use it:** Any question that requires connecting multiple pieces of the codebase together, not just a single lookup — root-cause analysis, "how does X actually work end-to-end," comparisons between components, etc. Comparisons and reviews are handled as investigations rather than separate commands (e.g., `pnpm veyn investigate "Compare AuthService and UserService"`).
 
 **Note:** This can take anywhere from several seconds to tens of seconds, since it involves multiple sequential LLM calls (Planner → Investigator → Reflection, possibly looped) plus tool execution. Use `--stream` to see reasoning steps as they happen rather than waiting silently.
 
@@ -151,11 +151,11 @@ A lighter-weight command for a single, focused explanation — not a full invest
 
 **What it does:**
 1. Gathers hard facts about the target: its definition, dependencies, callers, callees, references, and related code
-2. Sends those facts to Gemini in a single call to produce a readable, grounded explanation
+2. Sends those facts to Groq in a single call to produce a readable, grounded explanation
 
 **Example:**
 ```
-veyn explain AuthService
+pnpm veyn explain AuthService
 ```
 
 **When to use it:** "What does this do?" — a quick, one-shot explanation, as opposed to `investigate`'s open-ended multi-step reasoning.

@@ -8,7 +8,7 @@ import { Presenter } from "../ui/presenter.js";
 export function registerExplainCommand(program: Command) {
   program
     .command("explain <target>")
-    .description("Explain a function or file deterministically")
+    .description("Explain a file or code element")
     .action(async (target: string) => {
       try {
         if (!process.env.MONGODB_URI) {

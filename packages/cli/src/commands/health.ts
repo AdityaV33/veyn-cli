@@ -6,7 +6,7 @@ import { Presenter, colors } from "../ui/presenter.js";
 export function registerHealthCommand(program: Command) {
   program
     .command("health")
-    .description("Check repository health")
+    .description("Check for structural warnings")
     .action(async () => {
       try {
         if (!process.env.MONGODB_URI) {

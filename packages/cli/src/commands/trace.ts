@@ -113,7 +113,7 @@ function printTree(
 export function registerTraceCommand(program: Command) {
   program
     .command("trace <function>")
-    .description("Shows what calls a function and what the function calls.")
+    .description("Show callers and calls")
     .option("--depth <number>", "Number of call levels to follow\nDefault: 1")
     .addHelpText("after", `
 Examples:

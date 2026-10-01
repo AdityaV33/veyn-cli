@@ -3,12 +3,9 @@ import { RepositoryIdentityResolver, MongoIndexStorage, DependencyGraph } from "
 
 export function registerGraphCommand(program: Command) {
   const graphCmd = program
-    .command("graph")
-    .description("Graph operations\n\nAvailable command:\n  export  Export the repository dependency graph");
-
-  graphCmd
-    .command("export")
-    .description("Export the repository dependency graph for external tools.\n\nThe default output is JSON. Use DOT when creating a Graphviz diagram.\nThe command writes machine-readable data to stdout.")
+    .command("graph [exportArg]")
+    .usage("export [options]")
+    .description("Export the dependency graph")
     .option("--format <type>", "Output format: json or dot", "json")
     .addHelpText("after", `
 Examples:
@@ -21,7 +18,12 @@ Examples:
   Create an image with Graphviz:
     dot -Tpng graph.dot -o graph.png
 `)
-    .action(async (options) => {
+    .action(async (exportArg, options) => {
+      if (exportArg !== "export") {
+        console.error(`error: unknown command 'graph ${exportArg || ""}'. Did you mean 'graph export'?`);
+        process.exit(1);
+      }
+
       try {
         if (!process.env.MONGODB_URI) {
           console.error("Configuration Error: MONGODB_URI environment variable is missing.");

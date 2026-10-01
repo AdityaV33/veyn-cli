@@ -5,7 +5,7 @@ import { Presenter, colors } from "../ui/presenter.js";
 export function registerStatsCommand(program: Command) {
   program
     .command("stats")
-    .description("Show repository index stats")
+    .description("Show index statistics")
     .action(async () => {
       try {
         if (!process.env.MONGODB_URI) {

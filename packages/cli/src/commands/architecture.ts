@@ -12,7 +12,7 @@ import { Presenter, colors } from "../ui/presenter.js";
 export function registerArchitectureCommand(program: Command) {
   program
     .command("architecture [module]")
-    .description("Show architecture and dependencies for a module or the repository")
+    .description("Show repository or module dependencies")
     .action(async (targetModule: string | undefined) => {
       try {
         if (!process.env.MONGODB_URI) {

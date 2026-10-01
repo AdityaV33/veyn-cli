@@ -13,7 +13,7 @@ import { Presenter, colors } from "../ui/presenter.js";
 export function registerReindexCommand(program: Command) {
   program
     .command("reindex [path]")
-    .description("Incrementally reindex a repository.\nDefaults to the current directory.")
+    .description("Update an existing index")
     .action(async (repoPath: string = ".") => {
       try {
         if (!process.env.MONGODB_URI) {

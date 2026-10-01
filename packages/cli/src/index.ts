@@ -17,8 +17,20 @@ export function createCli() {
   
   program
     .name('veyn')
-    .description('Veyn CLI Phase 0.2 Foundation')
-    .version('1.0.0');
+    .description('Understand and explore your codebase.')
+    .version('1.0.0')
+    .configureHelp({
+      subcommandTerm: (cmd) => {
+        if (cmd.name() === 'graph') {
+          return 'graph export';
+        }
+        const args = cmd.registeredArguments
+          .map(arg => arg.required ? `<${arg.name()}>` : `[${arg.name()}]`)
+          .join(' ');
+        return args ? `${cmd.name()} ${args}` : cmd.name();
+      }
+    })
+    .addHelpText('after', '\nRun `veyn <command> --help` for command-specific help.');
 
   registerIndexCommand(program);
   registerReindexCommand(program);

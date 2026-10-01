@@ -12,7 +12,7 @@ import { Presenter, colors } from "../ui/presenter.js";
 export function registerSearchCommand(program: Command) {
   program
     .command("search <query>")
-    .description("Search the codebase using hybrid semantic and lexical retrieval")
+    .description("Find relevant code")
     .action(async (query: string) => {
       try {
         if (!process.env.MONGODB_URI) {

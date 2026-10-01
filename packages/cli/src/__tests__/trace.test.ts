@@ -69,7 +69,7 @@ describe('Trace Command', () => {
       if (e.message !== 'Process exited with code 0') throw e;
     }
     const output = writeSpy.mock.calls.map((c: any) => c[0]).join('');
-    expect(output).toContain('Shows what calls a function and what the function calls.');
+    expect(output).toContain('Show callers and calls');
     expect(output).toContain('--depth <number>');
     expect(output).toContain('Examples:');
     expect(output).toContain('veyn trace refreshToken');

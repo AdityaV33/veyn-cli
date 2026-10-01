@@ -6,7 +6,7 @@ import { Presenter, colors } from "../ui/presenter.js";
 export function registerIndexCommand(program: Command) {
   program
     .command("index [path]")
-    .description("Index a repository.\nDefaults to the current directory.")
+    .description("Create a repository index")
     .action(async (repoPath: string = ".") => {
       try {
         const absoluteRepoPath = path.resolve(repoPath);

@@ -35,8 +35,7 @@ describe('Veyn CLI Foundation', () => {
     expect(investigateCmd?.options.find(o => o.long === '--stream')).toBeDefined();
     
     const graphCmd = cli.commands.find(c => c.name() === 'graph');
-    const graphExportCmd = graphCmd?.commands.find(c => c.name() === 'export');
-    expect(graphExportCmd).toBeDefined();
-    expect(graphExportCmd?.options.find(o => o.long === '--format')).toBeDefined();
+    expect(graphCmd).toBeDefined();
+    expect(graphCmd?.options.find(o => o.long === '--format')).toBeDefined();
   });
 });

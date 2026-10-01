@@ -6,7 +6,7 @@ import { Presenter } from "../ui/presenter.js";
 export function registerInvestigateCommand(program: Command) {
   program
     .command("investigate <question>")
-    .description("Investigate a question using the AI agent")
+    .description("Ask a question about the repository")
     .option("--stream", "Stream the response")
     .action(async (question: string, options: { stream?: boolean }) => {
       if (!question || question.trim() === "") {

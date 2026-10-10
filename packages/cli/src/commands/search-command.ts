@@ -34,7 +34,7 @@ export function registerSearchCommand(program: Command) {
           const provider = new LocalEmbeddingProvider();
           const engine = new SearchEngine(storage, provider);
 
-          Presenter.title("Semantic Search");
+          Presenter.title("Search");
           Presenter.item("Query", query);
 
           Presenter.section("Status");
@@ -49,34 +49,36 @@ export function registerSearchCommand(program: Command) {
           Presenter.endStep();
 
           if (response.results.length === 0) {
-            Presenter.warning("No relevant results found for your query.");
+            Presenter.warning("No results found.");
             return;
           }
 
           Presenter.success("Search complete");
 
-          Presenter.section("Results found");
+          const exactMatches = response.results.filter(r => r.symbolName?.toLowerCase() === query.toLowerCase());
+          const relatedCode = response.results.filter(r => r.symbolName?.toLowerCase() !== query.toLowerCase());
 
-          response.results.forEach((result, index) => {
-            const sym = result.symbolName ? ` (Symbol: ${result.symbolName})` : "";
-            Presenter.text(`${colors.bold}${index + 1}. ${result.filePath}:${result.startLine}-${result.endLine}${colors.reset}${sym}`);
-
-            // Format content preview nicely
-            const contentLines = result.content.split('\n');
-            const preview = contentLines.slice(0, 3).join('\n').trim();
-            Presenter.dimText(`${preview}${contentLines.length > 3 ? '...' : ''}`, 2);
-            console.log("");
-          });
-
-          Presenter.section("Technical details");
-          Presenter.text(`Found ${response.results.length} matches using hybrid semantic+lexical search (BAAI/bge-small-en-v1.5)`);
-
-          // Show top score details
-          if (response.results.length > 0) {
-            const best = response.results[0];
-            Presenter.text(`Top match score: ${best.finalScore.toFixed(4)} (sem: ${best.semanticScore.toFixed(2)}, lex: ${best.lexicalScore.toFixed(2)}, grp: ${best.graphScore.toFixed(2)})`);
+          if (exactMatches.length > 0) {
+            Presenter.section("Exact matches");
+            exactMatches.forEach((result, index) => {
+              Presenter.text(`${colors.bold}${index + 1}. ${result.filePath}:${result.startLine}-${result.endLine}${colors.reset}`);
+              const contentLines = result.content.split('\n');
+              const preview = contentLines.slice(0, 3).join('\n').trim();
+              Presenter.dimText(`${preview}${contentLines.length > 3 ? '...' : ''}`, 2);
+              console.log("");
+            });
           }
-          console.log("");
+
+          if (relatedCode.length > 0) {
+            Presenter.section("Related code");
+            relatedCode.forEach((result, index) => {
+              Presenter.text(`${colors.bold}${index + 1 + exactMatches.length}. ${result.filePath}:${result.startLine}-${result.endLine}${colors.reset}`);
+              const contentLines = result.content.split('\n');
+              const preview = contentLines.slice(0, 3).join('\n').trim();
+              Presenter.dimText(`${preview}${contentLines.length > 3 ? '...' : ''}`, 2);
+              console.log("");
+            });
+          }
 
         } finally {
           await storage.disconnect();

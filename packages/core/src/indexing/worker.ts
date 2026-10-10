@@ -32,7 +32,17 @@ if (parentPort) {
           parser = new VeynParser(repositoryRoot);
           // Pre-load all files into the project so the TypeChecker can resolve cross-file references.
           // They are parsed lazily by ts-morph.
-          (parser as any).project.addSourceFilesAtPaths(path.join(repositoryRoot, "**/*.ts"));
+          (parser as any).project.addSourceFilesAtPaths([
+            path.join(repositoryRoot, "**/*.ts"),
+            "!" + path.join(repositoryRoot, "**/node_modules/**"),
+            "!" + path.join(repositoryRoot, "**/.git/**"),
+            "!" + path.join(repositoryRoot, "**/dist/**"),
+            "!" + path.join(repositoryRoot, "**/build/**"),
+            "!" + path.join(repositoryRoot, "**/coverage/**"),
+            "!" + path.join(repositoryRoot, "**/.next/**"),
+            "!" + path.join(repositoryRoot, "**/.nuxt/**"),
+            "!" + path.join(repositoryRoot, "**/out/**")
+          ]);
         }
 
         const allSymbols = [];

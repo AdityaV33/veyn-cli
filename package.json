@@ -23,12 +23,6 @@
     "node": ">=24"
   },
   "private": true,
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "protobufjs"
-    ]
-  },
   "devDependencies": {
     "@types/node": "^26.2.0",
     "typescript": "^7.0.2",

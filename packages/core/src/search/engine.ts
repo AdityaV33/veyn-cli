@@ -33,9 +33,7 @@ export class SearchEngine {
 
     // 1. Semantic Search
     try {
-      // Mock embedding query creation (the provider embed() requires CodeChunk, but we can bypass or mock)
-      // Actually GroqEmbeddingProvider embed() expects CodeChunk[].
-      // We should probably add an embedQuery() to the provider or just fake a CodeChunk.
+      // Create a mock code chunk for the query since embed() expects CodeChunk[]
       const queryChunk: CodeChunk = {
         id: "query",
         filePath: "query",

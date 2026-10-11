@@ -67,13 +67,11 @@ export function createInvestigationGraph(
     
     // Enforcement of the wall-clock deadline
     if (Date.now() - state.startTime > policy.deadlineMs) {
-      console.warn(`⚠️ Investigation reached ${policy.deadlineMs}ms deadline. Forcing STOP.`);
       return "reporter";
     }
 
     // Enforcement of investigation rounds (fast SLA policy)
     if (state.investigationRounds >= policy.maxInvestigationRounds) {
-      console.warn(`⚠️ Maximum investigation rounds (${policy.maxInvestigationRounds}) reached. Forcing STOP.`);
       return "reporter";
     }
 

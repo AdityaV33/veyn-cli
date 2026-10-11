@@ -20,9 +20,9 @@ graphify-out/
 .agents/
 
 # Tests
-**/__tests__/
-*.test.ts
-*.spec.ts
+
+
+
 
 # Specs
 Veyn_CLI_*.md

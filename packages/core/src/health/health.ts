@@ -10,16 +10,23 @@ export interface HealthReport {
 }
 
 export class HealthAnalyzer {
-  constructor(private storage: MongoIndexStorage, private repositoryId: string) {}
+  constructor(private storage: MongoIndexStorage, private repositoryId: string, private repositoryPath: string) {}
 
   public async analyze(): Promise<HealthReport> {
-    const files = await this.storage.getFiles(this.repositoryId);
-    const symbols = await this.storage.getSymbols(this.repositoryId);
+    const isTestOrConfig = (p: string) => p.includes('.test.') || p.includes('__tests__') || p.includes('.config.');
 
-    const depNodes = await this.storage.getDependencyNodes(this.repositoryId);
-    const depEdges = await this.storage.getDependencyEdges(this.repositoryId);
+    let files = await this.storage.getFiles(this.repositoryId);
+    let symbols = await this.storage.getSymbols(this.repositoryId);
+    let depNodes = await this.storage.getDependencyNodes(this.repositoryId);
+    let depEdges = await this.storage.getDependencyEdges(this.repositoryId);
+    let callEdges = await this.storage.getCallEdges(this.repositoryId);
 
-    const callEdges = await this.storage.getCallEdges(this.repositoryId);
+    // Completely exclude test and config artifacts from production health analysis
+    files = files.filter(f => !isTestOrConfig(f.relativePath));
+    symbols = symbols.filter(s => !isTestOrConfig(s.filePath));
+    depNodes = depNodes.filter(n => !isTestOrConfig(n.id));
+    depEdges = depEdges.filter(e => !isTestOrConfig(e.source) && !isTestOrConfig(e.target));
+    callEdges = callEdges.filter(e => !isTestOrConfig(e.sourceId) && !isTestOrConfig(e.targetId));
 
     // 1. Circular Dependencies
     const circularDependencies: string[][] = [];
@@ -77,11 +84,30 @@ export class HealthAnalyzer {
 
     for (const sym of symbols) {
       if (sym.kind === "function") {
-        // Just extract the basename for a robust check
-        const basename = sym.filePath.split(/[\\/]/).pop() || sym.filePath;
-        const id = `${basename}:${sym.name}`;
+        const isEntryPoint = 
+          sym.name.startsWith("register") || 
+          sym.name === "createCli" || 
+          sym.name === "createServer" || 
+          sym.name === "runBenchmark";
+
+        if (isEntryPoint) {
+          continue;
+        }
+
+        // Normalize symbol's absolute filePath to a repository-relative path
+        let relativePath = sym.filePath;
+        if (relativePath.startsWith(this.repositoryPath)) {
+          relativePath = relativePath.slice(this.repositoryPath.length);
+          if (relativePath.startsWith("/") || relativePath.startsWith("\\")) {
+            relativePath = relativePath.slice(1);
+          }
+        }
+        // Ensure consistent forward slashes
+        relativePath = relativePath.replace(/\\/g, "/");
+
+        const id = `${relativePath}:${sym.name}`;
         if (!calledTargets.has(id)) {
-          deadCodeSignals.push(`${sym.filePath}:${sym.name}`);
+          deadCodeSignals.push(`${relativePath}:${sym.name}`);
         }
       }
     }
@@ -89,7 +115,7 @@ export class HealthAnalyzer {
     // 3. Large files (> 50KB)
     const largeFiles = files
       .filter(f => f.sizeBytes > 50000)
-      .map(f => `${f.relativePath} (${(f.sizeBytes / 1024).toFixed(1)} KB)`);
+      .map(f => `${f.relativePath}::${f.sizeBytes}`);
 
     // 4. High coupling
     const highCoupling: string[] = [];
@@ -97,7 +123,7 @@ export class HealthAnalyzer {
       const deps = depGraph.getDependencies(node.id).length;
       const dependents = depGraph.getDependents(node.id).length;
       if (deps + dependents > 20) {
-        highCoupling.push(`${node.id} (fan-in: ${dependents}, fan-out: ${deps})`);
+        highCoupling.push(`${node.id}::${dependents}::${deps}`);
       }
     }
 
@@ -107,7 +133,7 @@ export class HealthAnalyzer {
       const deps = depGraph.getDependencies(node.id).length;
       const dependents = depGraph.getDependents(node.id).length;
       if (deps === 0 && dependents === 0) {
-        structuralIssues.push(`Isolated module: ${node.id}`);
+        structuralIssues.push(`${node.id}`);
       }
     }
 

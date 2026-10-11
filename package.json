@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "veyn": "node --env-file=.env packages/cli/bin/veyn.js",
     "typecheck": "tsc -b",
     "build": "tsc -b",
     "test": "vitest run"
@@ -22,12 +23,6 @@
     "node": ">=24"
   },
   "private": true,
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "protobufjs"
-    ]
-  },
   "devDependencies": {
     "@types/node": "^26.2.0",
     "typescript": "^7.0.2",

@@ -7,18 +7,18 @@ import {
   ArchitecturePathNode,
   loadDependencyGraph
 } from "@veyn/core";
+import { Presenter, colors } from "../ui/presenter.js";
 
 export function registerArchitectureCommand(program: Command) {
   program
-    .command("architecture <module>")
-    .description("Show architecture and dependencies for a module")
-    .option("-d, --depth <number>", "Maximum depth of the traversal", "5")
-    .action(async (targetModule: string, options: { depth: string }) => {
+    .command("architecture [module]")
+    .description("Show repository or module dependencies")
+    .action(async (targetModule: string | undefined) => {
       try {
         if (!process.env.MONGODB_URI) {
-          console.error("\\nConfiguration Error: MONGODB_URI environment variable is missing.");
-          console.error("Veyn architecture requires a configured MongoDB connection for the index.");
-          console.error("Please configure MONGODB_URI and try again.\\n");
+          Presenter.error("Configuration Error: MONGODB_URI environment variable is missing.");
+          Presenter.text("Veyn architecture requires a configured MongoDB connection for the index.");
+          Presenter.text("Please configure MONGODB_URI and try again.");
           process.exit(1);
         }
 
@@ -33,52 +33,98 @@ export function registerArchitectureCommand(program: Command) {
         try {
           const traversal = await loadDependencyGraph(storage, identity.id);
 
+          Presenter.title("Architecture");
+
+          if (!targetModule) {
+            const result = traversal.analyzeRepository(absoluteRepoPath);
+
+            Presenter.section("Dependency map");
+            if (result.packages.length === 0) {
+              console.log(`  ${colors.dim}No packages found.${colors.reset}`);
+              console.log("");
+            } else {
+              result.packages.forEach(pkg => {
+                console.log(`  ${colors.cyan}${pkg}${colors.reset}`);
+                const deps = result.dependsOn[pkg] || [];
+                if (deps.length === 0) {
+                  console.log(`    ${colors.dim}No internal package dependencies${colors.reset}`);
+                } else {
+                  deps.forEach((dep, idx) => {
+                    const prefix = idx === deps.length - 1 ? "└─ uses →" : "├─ uses →";
+                    console.log(`    ${colors.dim}${prefix}${colors.reset} ${colors.cyan}${dep}${colors.reset}`);
+                  });
+                }
+                console.log("");
+              });
+            }
+            Presenter.section("Summary");
+            const pkgText = result.totals.packages === 1 ? "package" : "packages";
+            const relText = result.totals.relationships === 1 ? "internal dependency relationship" : "internal dependency relationships";
+            console.log(`  ${result.totals.packages} ${pkgText}`);
+            console.log(`  ${result.totals.relationships} ${relText}`);
+            console.log("");
+            console.log("");
+            return;
+          }
+
           const targets = traversal.resolveTarget(targetModule);
           if (targets.length === 0) {
-            console.error(`\\nError: Could not resolve target module '${targetModule}' in the repository.\\n`);
+            Presenter.error(`Could not resolve target module '${targetModule}' in the repository.`);
             process.exit(1);
           }
 
           if (targets.length > 1) {
-            console.error(`\\nError: Ambiguous target module '${targetModule}'. Multiple occurrences found:\\n`);
-            targets.forEach(t => console.error(`  - ${t.id}`));
-            console.error("\\nPlease specify the exact ID using the format 'filepath'.\\n");
+            Presenter.error(`Ambiguous target module '${targetModule}'. Multiple occurrences found:`);
+            targets.forEach(t => Presenter.item("-", t.id));
+            Presenter.text("Please specify the exact ID using the format 'filepath'.");
             process.exit(1);
           }
 
           const targetId = targets[0].id;
-          const maxDepth = parseInt(options.depth, 10);
-
-          console.log(`\\nAnalyzing architecture for: ${targetId} (max depth: ${maxDepth})\\n`);
+          // Target mode only fetches direct dependencies and direct dependents
+          const maxDepth = 1;
 
           const result = traversal.analyze(targetId, { maxDepth });
 
-          const printPath = (pathNodes: ArchitecturePathNode[], isDependents: boolean) => {
-            pathNodes.forEach((p, idx) => {
-              const indent = "  ".repeat(idx);
-              if (idx === 0) {
-                console.log(`${indent}${p.node.id}`);
-              } else {
-                const arrow = isDependents ? "<- imported by <-" : "-> imports ->";
-                console.log(`${indent}${arrow} ${p.node.id}`);
+          const extractUnique = (paths: ArchitecturePathNode[][]) => {
+            const set = new Set<string>();
+            for (const path of paths) {
+              for (const node of path) {
+                if (node.node.id !== targetId) {
+                  set.add(node.node.id);
+                }
               }
-            });
-            console.log("");
+            }
+            return Array.from(set).sort();
           };
 
-          if (result.dependents.length > 0) {
-            console.log("DEPENDENTS (What imports this module):\\n");
-            result.dependents.forEach(p => printPath(p, true));
+          const uniqueDeps = extractUnique(result.dependencies);
+          const uniqueDependents = extractUnique(result.dependents);
+
+          Presenter.section("Dependency map");
+          console.log(`  ${colors.cyan}${targetId}${colors.reset}`);
+
+          if (uniqueDeps.length === 0 && uniqueDependents.length === 0) {
+            console.log(`    ${colors.dim}No direct dependencies found${colors.reset}`);
+            console.log(`    ${colors.dim}No direct dependents found${colors.reset}`);
           } else {
-            console.log("DEPENDENTS (What imports this module): None found\\n");
+            const relationships = [
+              ...uniqueDeps.map(dep => ({ prefix: "uses →", module: dep })),
+              ...uniqueDependents.map(dep => ({ prefix: "used by ←", module: dep }))
+            ];
+
+            relationships.forEach((rel, idx) => {
+              const treeChar = idx === relationships.length - 1 ? "└─" : "├─";
+              console.log(`    ${colors.dim}${treeChar} ${rel.prefix}${colors.reset} ${colors.cyan}${rel.module}${colors.reset}`);
+            });
           }
 
-          if (result.dependencies.length > 0) {
-            console.log("DEPENDENCIES (What this module imports):\\n");
-            result.dependencies.forEach(p => printPath(p, false));
-          } else {
-            console.log("DEPENDENCIES (What this module imports): None found\\n");
-          }
+          Presenter.section("Summary");
+          const depText = uniqueDeps.length === 1 ? "direct dependency" : "direct dependencies";
+          const dependentText = uniqueDependents.length === 1 ? "direct dependent" : "direct dependents";
+          console.log(`  ${uniqueDeps.length} ${depText}`);
+          console.log(`  ${uniqueDependents.length} ${dependentText}`);
+          console.log("");
 
         } finally {
           await storage.disconnect();
@@ -86,11 +132,11 @@ export function registerArchitectureCommand(program: Command) {
 
       } catch (error: any) {
         if (error instanceof PersistenceError) {
-          console.error(`\\nArchitecture Error: ${error.message}\\n`);
+          Presenter.error(`Architecture Error: ${error.message}`);
           process.exit(1);
         }
 
-        console.error(`\\nUnexpected Error: ${error.message}\\n`);
+        Presenter.error(`Unexpected Error: ${error.message}`);
         process.exit(1);
       }
     });

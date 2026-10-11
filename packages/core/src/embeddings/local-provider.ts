@@ -1,11 +1,7 @@
 import { CodeChunk, EmbeddingResult, EmbeddingProviderConfig } from "./types.js";
 import { EmbeddingProvider } from "./provider.js";
 import { EmbeddingProviderError } from "./errors.js";
-import { pipeline, env, FeatureExtractionPipeline } from "@xenova/transformers";
-
-// Configure transformers to not use browser cache, use local model caching
-env.useBrowserCache = false;
-env.allowLocalModels = true;
+import type { FeatureExtractionPipeline } from "@xenova/transformers";
 
 export class LocalEmbeddingProvider implements EmbeddingProvider {
   private modelId: string;
@@ -24,7 +20,10 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
     if (!this.loadingPromise) {
       this.loadingPromise = (async () => {
         try {
-          this.extractor = await pipeline("feature-extraction", this.modelId, {
+          const transformers = await import("@xenova/transformers");
+          transformers.env.useBrowserCache = false;
+          transformers.env.allowLocalModels = true;
+          this.extractor = await transformers.pipeline("feature-extraction", this.modelId, {
             quantized: true, // Use ONNX integer quantization to save RAM
           });
         } catch (error: any) {

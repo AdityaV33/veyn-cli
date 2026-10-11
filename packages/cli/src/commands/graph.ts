@@ -2,15 +2,31 @@ import { Command } from "commander";
 import { RepositoryIdentityResolver, MongoIndexStorage, DependencyGraph } from "@veyn/core";
 
 export function registerGraphCommand(program: Command) {
-  const graphCmd = program.command("graph").description("Graph operations");
-  graphCmd
-    .command("export")
-    .description("Export the graph")
-    .option("--format <type>", "Format to export (json|dot)", "json")
-    .action(async (options) => {
+  const graphCmd = program
+    .command("graph [exportArg]")
+    .usage("export [options]")
+    .description("Export the dependency graph")
+    .option("--format <type>", "Output format: json or dot", "json")
+    .addHelpText("after", `
+Examples:
+  Save JSON data:
+    veyn graph export > graph.json
+
+  Save Graphviz data:
+    veyn graph export --format=dot > graph.dot
+
+  Create an image with Graphviz:
+    dot -Tpng graph.dot -o graph.png
+`)
+    .action(async (exportArg, options) => {
+      if (exportArg !== "export") {
+        console.error(`error: unknown command 'graph ${exportArg || ""}'. Did you mean 'graph export'?`);
+        process.exit(1);
+      }
+
       try {
         if (!process.env.MONGODB_URI) {
-          console.error("\\nConfiguration Error: MONGODB_URI environment variable is missing.");
+          console.error("Configuration Error: MONGODB_URI environment variable is missing.");
           process.exit(1);
         }
 
@@ -50,7 +66,7 @@ export function registerGraphCommand(program: Command) {
           await storage.disconnect();
         }
       } catch (error: any) {
-        console.error(`\\nError: ${error.message}\\n`);
+        console.error(`Error: ${error.message}`);
         process.exit(1);
       }
     });
